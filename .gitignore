@@ -4,5 +4,6 @@
 .RData
 *.RData
 .Ruserdata
+.DS_Store
 
 /Data
