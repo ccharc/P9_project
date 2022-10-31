@@ -1,4 +1,0 @@
-*.rproj
-*.log
-**/logs
-
