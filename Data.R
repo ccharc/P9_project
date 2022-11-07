@@ -97,6 +97,8 @@ ZARJPY= read.csv("Data/DAT_NT_ZARJPY_T_LAST_201801.csv", sep=";", header = FALSE
 
 DF = list("AUDCAD" =AUDCAD,"AUDCHF" = AUDCHF,"AUDJPY" = AUDJPY,"AUDNZD"=AUDNZD,"AUDUSD" = AUDUSD,"CADCHF"=CADCHF,"CADJPY"=CADJPY,"CHFJPY"=CHFJPY,"EURAUD"=EURAUD,"EURCAD"=EURCAD,"EURCHF"=EURCHF,"EURCZK"=EURCZK,"EURGBP"=EURGBP,"EURHUF"=EURHUF,"EURJPY"=EURJPY,"EURNOK"=EURNOK,"EURNZD"=EURNZD,"EURPLN"=EURPLN,"EURSEK"=EURSEK,"EURTRY"=EURTRY,"EURUSD"=EURUSD,"GBPAUD"=GBPAUD,"GBPCAD"=GBPCAD,"GBPJPY"=GBPJPY,"GBPNZD"=GBPNZD,"GBPUSD"=GBPUSD,"NZDCAD"=NZDCAD,"NZDCHF"=NZDCHF,"NZDJPY"=NZDJPY,"NZDUSD"=NZDUSD,"SGDJPY"=SGDJPY,"USDCAD"=USDCAD,"USDCHF"=USDCHF,"USDCZK"=USDCZK,"USDHUF"=USDHUF,"USDJPY"=USDJPY,"USDNOK"=USDNOK,"USDPLN"=USDPLN,"USDSEK"=USDSEK,"USDSGD"=USDSGD,"USDTRY"=USDTRY,"ZARJPY"=ZARJPY)
 
+
+
 #Log af DF
 #for (i in 1:length(DF)) {
   #DF[[i]][[2]] <- log(DF[[i]][[2]])
@@ -107,19 +109,26 @@ DF = list("AUDCAD" =AUDCAD,"AUDCHF" = AUDCHF,"AUDJPY" = AUDJPY,"AUDNZD"=AUDNZD,"
 DF
 
 ###Mutate datoer, vælger to første vektorer, samt vælger første dag i datasættet
-func = function(data){
+mutate_data = function(data){
     data %>% dplyr::mutate(V1 = as.POSIXct(V1, format= "%Y%m%d %H%M%S")) %>% 
     dplyr::select(DT=V1,Price = V2) %>% 
-    dplyr::filter(as.Date(DT)==as.Date("2018-01-01")) %>% 
+   # dplyr::filter(as.Date(DT)==as.Date("2018-01-01")) %>% 
     data.table() 
 }
 
 
 future::plan(multisession(workers= availableCores()))
 
-df_true = future_map(DF,func)
+df_true = future_map(DF,mutate_data)
 
 df_true
+
+
+for (i in  1:length(df_true)){
+  plot(df_true[[i]], type = "l", main = names(df_true)[i])
+}
+
+names(df_true)[1]
 
 
 
