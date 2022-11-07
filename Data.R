@@ -4,6 +4,7 @@ library(future)
 library(dplyr)
 library(highfrequency)
 library(xts)
+library(ggplot2)
 
 
 AUDCAD= read.csv("Data/DAT_NT_AUDCAD_T_LAST_201801.csv", sep=";", header = FALSE)
@@ -123,15 +124,14 @@ df_true = future_map(DF,mutate_data)
 
 df_true
 
-
-for (i in  1:length(df_true)){
-  plot(df_true[[i]], type = "l", main = names(df_true)[i])
-}
-
-names(df_true)[1]
-
-
-
+## Plots and saves all dataa
+#for (i in  1:length(df_true)){
+ #p = ggplot(data = df_true[[i]], aes(x = DT, y = Price)) +
+  #geom_line() + 
+  #ggtitle(names(df_true)[i])
+  
+  #ggsave(p,file=paste0("plot_", names(df_true)[i],".png"), width = 14, height = 10, units = "cm")
+#}
 
 
 ### Estimation of integrated volatility
