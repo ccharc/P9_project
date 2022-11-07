@@ -4,7 +4,7 @@ gfunction = function(x)
   return(x)
 }
 
-preaverage = function(price)
+preaverage = function(price, kn)
 {
   Y_bar = c()
   for (i in 1:(length(price)-kn+1)) {
