@@ -1,21 +1,22 @@
+gfunction = function(x) 
+{
+  x[x > (1 - x)] <- (1 - x)[x > (1 - x)]
+  return(x)
+}
+
+preaverage = function(price)
+{
+  Y_bar = c()
+  for (i in 1:(length(price)-kn+1)) {
+    returns = diff(price)
+    Y_bar[i] = sum( gfunction((1:(kn-1))/kn) * returns[(i):(i+kn-2)] )
+  }
+  return(Y_bar)
+}
+
+
 compute_MRC = function(df_prices)
 {
-  gfunction = function(x) 
-  {
-    x[x > (1 - x)] <- (1 - x)[x > (1 - x)]
-    return(x)
-  }
-  
-  preaverage = function(price)
-  {
-    Y_bar = c()
-    for (i in 1:(length(price)-kn+1)) {
-      returns = diff(price)
-      Y_bar[i] = sum( gfunction((1:(kn-1))/kn) * returns[(i):(i+kn-2)] )
-    }
-    return(Y_bar)
-  }
-  
   Y_bar = purrr::map_dfc(
     .x = paste0("V", 1:n_assets), 
     .f = function(x) {df_prices %>% dplyr::pull(x) %>% preaverage()}
