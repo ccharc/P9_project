@@ -22,7 +22,10 @@ delta = 0.1
 n_assets = 5
 # set.seed(101)
 
-price_list = purrr::map(.x = rep(n, n_assets), .f = simulate_price)
+# W needs to be specified outside simulate_price
+W_increments = sqrt(t_max/n)*rnorm(n+1,0,1)
+W = c(0,cumsum(W_increments))
+price_list = purrr::map(.x = rep(n, n_assets), .f = simulate_price, W = W)
 df_prices = refreshTime(price_list)
 
 kn = floor(theta * nrow(df_prices)^(1/2 + delta))
