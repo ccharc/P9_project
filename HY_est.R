@@ -29,7 +29,13 @@ W_increments = sqrt(t_max/n)*rnorm(n+1,0,1)
 W = c(0,cumsum(W_increments))
 
 # creating price series
-price_list = purrr::map(.x = rep(n, 5), .f = simulate_price, W = W)
+price_list = purrr::map(.x = rep(n, 5), .f = function(x,W) as.data.table(simulate_price(x,W)[1]), W = W)
+
+# computing log-prices
+price_list = purrr::map(
+  .x = price_list,
+  .f = function(x) {x %>% mutate("Price" = log(Price))}
+)
 
 # meantimes
 get_meantime = function(pricetable){
@@ -78,7 +84,7 @@ get_preavg_prices = function(pricetable, kn){
  
   preavg_obs = pricetable %>% 
     pull(Price) %>% 
-    preaverage(kn)
+    preaverage(kn,gfunction)
   
   pricetable %>%
     filter(row_number() <= length(preavg_obs)) %>%  
