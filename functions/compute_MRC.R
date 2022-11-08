@@ -4,12 +4,12 @@ gfunction = function(x)
   return(x)
 }
 
-preaverage = function(price, kn)
+preaverage = function(price, kn, g)
 {
   Y_bar = c()
   for (i in 1:(length(price)-kn+1)) {
     returns = diff(price)
-    Y_bar[i] = sum( gfunction((1:(kn-1))/kn) * returns[(i):(i+kn-2)] )
+    Y_bar[i] = sum( g((1:(kn-1))/kn) * returns[(i):(i+kn-2)] )
   }
   return(Y_bar)
 }
@@ -19,7 +19,8 @@ compute_MRC = function(df_prices)
 {
   Y_bar = purrr::map_dfc(
     .x = paste0("V", 1:n_assets), 
-    .f = function(x) {df_prices %>% dplyr::pull(x) %>% preaverage()}
+    .f = function(x, kn, g) {df_prices %>% dplyr::pull(x) %>% preaverage(kn, g)},
+    kn = kn, g = gfunction
   ) %>% 
     setNames(paste0("Asset_", 1:n_assets)) %>%
     as.matrix() 

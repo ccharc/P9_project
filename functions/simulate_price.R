@@ -1,10 +1,8 @@
-simulate_price = function(n)
+simulate_price = function(n, W)
 {
   # Brownian motions
   BM_increments = sqrt(t_max/n)*rnorm(n+1,0,1)
   BM = c(0,cumsum(BM_increments))
-  W_increments = sqrt(t_max/n)*rnorm(n+1,0,1)
-  W = c(0,cumsum(W_increments))
   
   # OU specification for varrho
   varrho = c()
