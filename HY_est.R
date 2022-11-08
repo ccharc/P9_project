@@ -16,7 +16,8 @@ theta = 0.8
 t_max = 1
 n = 28801                       # 8 hours in seconds
 gamma = sqrt(0.01)              # levels of volatility: 0, 0.001, 0.01
-lambda1 = c(3, 5, 10, 30, 60)   # avg. waiting times until new price
+# lambda1 = c(3, 5, 10, 30, 60)   # avg. waiting times until new price
+lambda1 = c(2, 4, 7, 10, 15)
 lambda2 = lambda1*2
 set.seed(101)
 
@@ -29,7 +30,13 @@ W_increments = sqrt(t_max/n)*rnorm(n+1,0,1)
 W = c(0,cumsum(W_increments))
 
 # creating price series
-price_list = purrr::map(.x = rep(n, 5), .f = simulate_price, W = W)
+price_list = purrr::map(.x = rep(n, 5), .f = function(x,W) as.data.table(simulate_price(x,W)[1]), W = W)
+
+# computing log-prices
+price_list = purrr::map(
+  .x = price_list,
+  .f = function(x) {x %>% mutate("Price" = log(Price))}
+)
 
 # meantimes
 get_meantime = function(pricetable){
@@ -78,7 +85,7 @@ get_preavg_prices = function(pricetable, kn){
  
   preavg_obs = pricetable %>% 
     pull(Price) %>% 
-    preaverage(kn)
+    preaverage(kn,gfunction)
   
   pricetable %>%
     filter(row_number() <= length(preavg_obs)) %>%  
