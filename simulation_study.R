@@ -15,23 +15,35 @@ rho = -0.3
 t_max = 1
 n = 28801                       # 8 hours in seconds
 gamma = sqrt(0.01)              # levels of volatility: 0, 0.001, 0.01
-lambda1 = c(3, 5, 10, 30, 60)   # avg. waiting times until new price
+#lambda1 = c(3, 5, 10, 30, 60)  # avg. waiting times until new price
+lambda1 = c(2, 4, 7, 10, 15)
 lambda2 = lambda1*2
 theta = 0.8
 delta = 0.1
 n_assets = 5
-# set.seed(101)
+set.seed(101)
 
 # W needs to be specified outside simulate_price
 W_increments = sqrt(t_max/n)*rnorm(n+1,0,1)
 W = c(0,cumsum(W_increments))
-price_list = purrr::map(.x = rep(n, n_assets), .f = simulate_price, W = W)
+
+
+price_list = purrr::map(.x = rep(n, n_assets), .f = function(x, W) as.data.table(simulate_price(x, W)[1]), W = W)
 df_prices = refreshTime(price_list)
 
-kn = floor(theta * nrow(df_prices)^(1/2 + delta))
+df_prices = purrr::map_dfc(
+  .x = paste0("V", 1:n_assets), 
+  .f = function(x) {df_prices %>% dplyr::pull(x) %>% log()}
+  )%>% 
+  setNames(paste0("V", 1:n_assets)) %>%
+  as.data.table() 
+
+
+
+kn = floor(theta * nrow(df_prices)^(1/2))
 
 compute_MRC(df_prices)
-
+rMRCov(price_list)
 
 create_Vn = function(g){
   Y_bar = purrr::map_dfc(
