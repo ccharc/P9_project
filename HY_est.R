@@ -24,9 +24,12 @@ set.seed(101)
 #   HY estimator
 #--------------------
 
+# W needs to be specified outside simulate_price
+W_increments = sqrt(t_max/n)*rnorm(n+1,0,1)
+W = c(0,cumsum(W_increments))
 
 # creating price series
-price_list = purrr::map(.x = rep(n, 5), .f = simulate_price)
+price_list = purrr::map(.x = rep(n, 5), .f = simulate_price, W = W)
 
 # meantimes
 get_meantime = function(pricetable){
@@ -119,7 +122,7 @@ compute_HY_entry = function(
   
   price_matrix = Price1 %*% t(Price2)
   
-  sum(c(price_matrix * as.matrix(condition_df)))
+  1/((psi*kn)^2) * sum(c(price_matrix * as.matrix(condition_df)))
   
   # 
   # HY_entry = 0
@@ -151,8 +154,9 @@ compute_HY = function(equi_pricetable, preavg_pricetable){
   )
 }
 
+tictoc::tic()
 compute_HY(equi_price_list, preavg_price_list)
-
+tictoc::toc()
 
 
 
