@@ -1,6 +1,6 @@
 # extracting sigma 
 rho = -0.3
-set.seed(101)
+set.seed(102)
 
 # W needs to be specified outside simulate_price
 W_increments = sqrt(t_max/n)*rnorm(n+1,0,1)
@@ -10,7 +10,8 @@ W = c(0,cumsum(W_increments))
 sigma_list = purrr::map(.x = rep(n, 5), .f = function(x,W) simulate_price(x,W)[2], W = W)
 
 quad_11 = (1-rho^2) * sum(1/n * unlist(sigma_list[1])^2) + rho^2 * sum(1/n * unlist(sigma_list[1])^2)
-quad_12 = 0.3^2 * sum(1/3600 * unlist(sigma_list[1]) * unlist(sigma_list[2]))
+quad_33 = (1-rho^2) * sum(1/n * unlist(sigma_list[3])^2) + rho^2 * sum(1/n * unlist(sigma_list[1])^2)
+quad_12 = (1-0.3^2) * sum(1/n * unlist(sigma_list[1]) * unlist(sigma_list[2]))
 quad_22 = (1-rho^2) * sum(1/n * unlist(sigma_list[2])^2) + rho^2 * sum(1/n * unlist(sigma_list[2])^2)
 
 

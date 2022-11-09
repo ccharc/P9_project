@@ -16,12 +16,12 @@ t_max = 1
 n = 28801                       # 8 hours in seconds
 gamma = sqrt(0.01)              # levels of volatility: 0, 0.001, 0.01
 #lambda1 = c(3, 5, 10, 30, 60)  # avg. waiting times until new price
-lambda1 = c(2, 4, 7, 10, 15)
+lambda1 = c(2, 2, 2, 2, 2)
 lambda2 = lambda1*2
 theta = 0.8
 delta = 0.1
 n_assets = 5
-set.seed(101)
+set.seed(100)
 
 # W needs to be specified outside simulate_price
 W_increments = sqrt(t_max/n)*rnorm(n+1,0,1)
@@ -39,76 +39,27 @@ df_prices = purrr::map_dfc(
   as.data.table() 
 
 
-
+# The pre-averaging window
 kn = floor(theta * nrow(df_prices)^(1/2))
 
-compute_MRC(df_prices)
+# The MRC estimator
+mrc = compute_MRC(df_prices)
 rMRCov(price_list)
 
-create_Vn = function(g){
-  Y_bar = purrr::map_dfc(
-    .x = paste0("V", 1:n_assets), 
-    .f = function(x, kn, g) {df_prices %>% dplyr::pull(x) %>% preaverage(kn, g)},
-    kn = kn, g = g
-  ) %>% 
-    setNames(paste0("Asset_", 1:n_assets)) %>%
-    as.matrix() 
+# The asymptotic covariance matrix
+avar = matrix(create_ublb(df_prices), nrow = nrow(mrc))
 
-  chi = list()
-  for (i in 1:nrow(Y_bar)) {
-    chi[[i]] = c(Y_bar[i,] %*% t(Y_bar[i,]))
-  }
-
-  s1 = 0
-  for (i in 1:(nrow(Y_bar))) {
-    s1 = s1 + chi[[i]] %*% t(chi[[i]])
-  }
-  s2 = 0
-  for (i in 1:(nrow(Y_bar)-kn)) {
-    s2 = s2 + 1/2 * ( chi[[i]] %*% t(chi[[i+kn]]) + chi[[i+kn]] %*% t(chi[[i]]) )
-  }
-  Vn = s1 - s2
-  return(Vn)
-}
-create_Vn(gfunction) # example
-
-phi1_g1 = 17/15
-phi2_g1 = 1/630
-phi1_g2 = 2/15
-phi2_g2 = 1/105
-phi1_g3 = 34/21
-phi2_g3 = 1/630
-
-A = matrix(c(theta^2*phi2_g1, phi1_g1*phi2_g1 , phi1_g1^2/theta^2,
-             theta^2*phi2_g2, phi1_g2*phi2_g2 , phi1_g2^2/theta^2,
-             theta^2*phi2_g3, phi1_g3*phi2_g3 , phi1_g3^2/theta^2),
-           nrow = 3, ncol = 3, byrow = TRUE)
-
-A_inv = solve(A)
-
-C_vec = c((2*theta*(151/80640))/((1/12)^2), (2*(1/96))/((1/12)^2), (2*(1/6))/((1/12)^2*theta^3)) # Skal disse størrelser mon regnes ud fra g eller g1, g2 & g3?
-C_weight = C_vec %*% A
+lb = mrc - avar
+ub = mrc + avar
 
 
-# Defining the 
-g1 = function(x){
-  y <- x*(1-x)^2
-  return(y)
-}
 
-g2 = function(x){
-  y <- x^2*(1-x)
-  return(y)
-}
 
-g3 = function(x){
-  y <- x^2*(1-x)^2
-  return(y)
-}
 
-# Computing the asymptotic covariance matrix
-avar = C_weight[1]*create_Vn(g1) + C_weight[2]*create_Vn(g2) + C_weight[3]*create_Vn(g3)
-diag(avar)
+
+
+
+
 
 
 # -------------------------------------------------------------------------
