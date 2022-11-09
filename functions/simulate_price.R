@@ -9,7 +9,7 @@ simulate_price = function(n, W)
   varrho0 = rnorm(n = 1, mean = 0, sd = (-2*alpha)^(-1))
   varrho[1] = varrho0
   for (i in 1:n) {
-    varrho[i+1] = alpha * varrho[i] + (BM[i+1] - BM[i])
+    varrho[i+1] = varrho[i] + alpha * varrho[i] + (BM[i+1] - BM[i])
   }
   
   # sigma spot volatility
