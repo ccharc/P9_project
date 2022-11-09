@@ -16,10 +16,11 @@ theta = 0.8
 t_max = 1
 n = 28801                       # 8 hours in seconds
 gamma = sqrt(0.01)              # levels of volatility: 0, 0.001, 0.01
-# lambda1 = c(3, 5, 10, 30, 60)   # avg. waiting times until new price
-lambda1 = c(2, 4, 7, 10, 15)
+lambda1 = c(3, 5, 10, 30, 60)   # avg. waiting times until new price
+#lambda1 = c(2, 4, 7, 10, 15)
 lambda2 = lambda1*2
 set.seed(101)
+n_assets = 5
 
 #--------------------
 #   HY estimator
@@ -28,9 +29,12 @@ set.seed(101)
 # W needs to be specified outside simulate_price
 W_increments = sqrt(t_max/n)*rnorm(n+1,0,1)
 W = c(0,cumsum(W_increments))
+simulate_price(n, W)[1]
 
 # creating price series
-price_list = purrr::map(.x = rep(n, 5), .f = function(x,W) as.data.table(simulate_price(x,W)[1]), W = W)
+prices_and_sigmas = purrr::map(.x = rep(n, n_assets), .f = simulate_price, W = W)
+price_list = purrr::map(prices_and_sigmas, .f = 1)
+sigma_list = purrr::map(prices_and_sigmas, .f = 2)
 
 # computing log-prices
 price_list = purrr::map(
@@ -167,14 +171,71 @@ tictoc::toc()
 
 
 
+# Confidence intervals ----------------------------------------------------
+
+
+# HY estimator on the interval [0,t], 0 <= t <= T
+# t is datetime with time zone EST (e.g. t = as.POSIXct("2022-10-31 04:00:00", tz = "EST")) )
+compute_HY_entry_timeinterval = function(
+    equi_pricetable1, equi_pricetable2, preavg_pricetable1, preavg_pricetable2, t
+)
+{
+  DT1 = equi_pricetable1 %>% pull(DT)
+  DT2 = equi_pricetable2 %>% pull(DT)
+  Price1 = preavg_pricetable1 %>% pull(Price)
+  Price2 = preavg_pricetable2 %>% pull(Price)
+  
+  DT1_tib = tibble("left" = DT1) %>% 
+    mutate(right = lead(DT1, kn-1)) %>% 
+    filter(left <= t) %>%
+    filter(row_number() <= nrow(.) - kn + 1)
+  DT2_tib = tibble("left" = DT2) %>% 
+    mutate(right = lead(DT2, kn-1)) %>% 
+    filter(left <= t) %>%
+    filter(row_number() <= nrow(.) - kn + 1)
+  
+  Price1 = Price1[1:(nrow(DT1_tib))]
+  Price2 = Price2[1:(nrow(DT2_tib))]
+  
+  check_condition = function(y_left, y_right){
+    DT1_tib$left < y_left & y_left <= DT1_tib$right | 
+      DT1_tib$left < y_right & y_right <= DT1_tib$right
+  }
+  
+  condition_df = purrr::map2_dfc(DT2_tib$left, DT2_tib$right, check_condition) %>% 
+    mutate(across(everything(), as.integer))
+  
+  price_matrix = Price1 %*% t(Price2)
+  
+  1/((psi*kn)^2) * sum(c(price_matrix * as.matrix(condition_df)))
+  
+}
 
 
 
+# define functions used for estimation of conditional covariance matrix 
 
+# define the ration between the number of observations for each asset and 
+# the total number of observations i.e. n_k / n (estimate of m_k)
+get_mk = function(pricetable, k){
+  nrow(pricetable[[k]]) / purrr::map(.x = pricetable, .f = nrow) %>% unlist() %>% sum()
+}
 
+# f function (time transformation function) (same for all k = 1,...,d)
+ffunction = function(x){
+  1/x
+}
 
+fprime = function(x){
+  -1/x^2
+}
 
+# h function 
+hfunction = function(pricetable, k, l, x){
+  get_mk(pricetable, k) * fprime(x) / get_mk(pricetable, l) * fprime(x)
+}
 
+# 
 
 
 
