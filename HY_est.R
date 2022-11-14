@@ -235,7 +235,46 @@ hfunction = function(pricetable, k, l, x){
   get_mk(pricetable, k) * fprime(x) / get_mk(pricetable, l) * fprime(x)
 }
 
-# 
+# psi functions
+# we redefine the g function such that g(x) = 0 for x notin [0,1]
+gfunc = function(x) 
+{
+  if (x >= 0 & x <= 1){
+    x[x > (1 - x)] <- (1 - x)[x > (1 - x)]
+    return(x)
+  }
+  else return(0)
+}
+
+gfunc_prime = function(x) {
+  if (x >= 0 & x <= 1/2) {
+    return(1)
+  }
+  else if (x > 1/2 & x <= 1) {
+    return(-1)
+  }
+  else return(0)
+}
+
+
+compute_psi_integrand = function(u,v){
+  gfunc(u) * gfunc(v)
+}
+
+compute_psibar_integrand = function(u,v){
+  gfunc(u) * gfunc_prime(v)
+}
+
+compute_psitilde_integrand = function(u,v){
+  gfunc_prime(u) * gfunc_prime(v) 
+}
+
+
+psi_function = function(s,x){
+  lower = (u)
+}
+
+seq(1, 10, 0.1) 
 
 
 
