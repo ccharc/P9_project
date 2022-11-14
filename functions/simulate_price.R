@@ -54,5 +54,5 @@ simulate_price = function(n, W)
   # tibble::tibble("Time" = wait_times1, "Price" = Y_async)
   datetime = as.POSIXct("2022-10-31 01:00:00", tz = "EST") + lubridate::seconds(wait_times1*n)
   price = data.table("DT" = datetime, "Price" = exp(Y_async))
-  return(list(price, sigma))
+  return(list("price" = price, "sigma" = sigma))
 }
