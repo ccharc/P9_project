@@ -15,7 +15,7 @@ preaverage = function(price, kn, g)
 }
 
 
-compute_MRC = function(df_prices)
+compute_MRC = function(df_prices, n_assets, kn)
 {
   Y_bar = purrr::map_dfc(
     .x = paste0("V", 1:n_assets), 
@@ -34,7 +34,7 @@ compute_MRC = function(df_prices)
   psi1kn = kn * sum((gfunction((1:kn)/kn) - gfunction(((1:kn) - 1)/kn))^2)
   psi2kn = 1/kn * sum(gfunction((1:kn)/kn)^2)
   
-  Y_sum * (nrow(df_prices)/(nrow(df_prices)-kn+2)) * 1/((1/12)*kn) - psi1kn * (1/nrow(df_prices))/(2 * theta^2 * psi2kn) * 
+  Y_sum * (nrow(df_prices)/(nrow(df_prices)-kn+2)) * 1/((1/12)*kn) - psi1kn * (1/(theta^2 * psi2kn)) * 
     (1/(2*nrow(df_prices))) * t(diff(as.matrix(df_prices))) %*% diff(as.matrix(df_prices))
 }
 
