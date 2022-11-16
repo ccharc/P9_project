@@ -82,7 +82,7 @@ MSE_list = purrr::map(sim_list, .f = 3)
 
 sum(unlist(TF_sum_list), na.rm = TRUE)/2500
 
-hist(sapply(std_norm_list, "[[", 1), breaks = 100)
+hist(sapply(std_norm_list, "[[", 1), breaks = 100, probability = TRUE)
 # -------------------------------------------------------------------------
 
 
