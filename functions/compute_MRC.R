@@ -18,11 +18,10 @@ preaverage = function(price, kn, g)
 compute_MRC = function(df_prices, n_assets, kn)
 {
   Y_bar = purrr::map_dfc(
-    .x = paste0("V", 1:n_assets), 
+    .x = paste0("V", 1:n_assets) %>% setNames(paste0("Asset", 1:n_assets)), 
     .f = function(x, kn, g) {df_prices %>% dplyr::pull(x) %>% preaverage(kn, g)},
     kn = kn, g = gfunction
-  ) %>% 
-    setNames(paste0("Asset_", 1:n_assets)) %>%
+  ) %>%
     as.matrix() 
   
   # Y_sum = 0

@@ -16,11 +16,10 @@ g3 = function(x){
 
 create_Vn = function(g, n_assets, df_prices, kn){
   Y_bar = purrr::map_dfc(
-    .x = paste0("V", 1:n_assets), 
+    .x = paste0("V", 1:n_assets) %>% setNames(paste0("Asset_", 1:n_assets)), 
     .f = function(x, kn, g) {df_prices %>% dplyr::pull(x) %>% preaverage(kn, g)},
     kn = kn, g = g
-  ) %>% 
-    setNames(paste0("Asset_", 1:n_assets)) %>%
+  ) %>%
     as.matrix() 
   
   chi = list()
@@ -34,17 +33,18 @@ create_Vn = function(g, n_assets, df_prices, kn){
   }
   s2 = 0
   for (i in 1:(nrow(Y_bar)-kn)) {
-    s2 = s2 + 1/2 * ( chi[[i]] %*% t(chi[[i+kn]]) + chi[[i+kn]] %*% t(chi[[i]]) )
+    s2 = s2 + ( chi[[i]] %*% t(chi[[i+kn]]) + chi[[i+kn]] %*% t(chi[[i]]) )
   }
-  Vn = s1 - s2
+  
+  Vn = s1 - 1/2 * s2
   return(Vn)
 }
 
 create_ublb = function(n_assets, df_prices, kn){ 
   # Computing the asymptotic covariance matrix
-  avar = C_weight[1]*create_Vn(g1, n_assets, df_prices, kn) +
-    C_weight[2]*create_Vn(g2, n_assets, df_prices, kn) +
-    C_weight[3]*create_Vn(g3, n_assets, df_prices, kn)
+  avar = C_weight[1] * create_Vn(g1, n_assets, df_prices, kn) +
+    C_weight[2] * create_Vn(g2, n_assets, df_prices, kn) +
+    C_weight[3] * create_Vn(g3, n_assets, df_prices, kn)
   
   # Only the diagonals are needed when creating conf. intervals
   1.96 * nrow(df_prices)^(-1/4) * diag(avar)
