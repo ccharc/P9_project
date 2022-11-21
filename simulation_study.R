@@ -8,7 +8,6 @@ R.utils::sourceDirectory("functions", modifiedOnly = FALSE)
 
 
 MRC_monte_carlo = function(seed){
-  
   set.seed(seed)
   
   # W needs to be specified outside simulate_price
@@ -19,7 +18,8 @@ MRC_monte_carlo = function(seed){
   price_list = purrr::map(prices_and_sigmas, .f = "price")
   sigma_list = purrr::map(prices_and_sigmas, .f = "sigma")
   df_prices = refreshTime(price_list)
-
+  #df_prices = as.data.table(price_list)
+  
   df_prices = purrr::map_dfc(
     .x = paste0("V", 1:n_assets) %>% setNames(paste0("V", 1:n_assets)), 
     .f = function(x) {df_prices %>% dplyr::pull(x) %>% log()}
@@ -31,7 +31,7 @@ MRC_monte_carlo = function(seed){
 
   # The MRC estimator
   mrc = compute_MRC(df_prices, n_assets, kn)
-  # mrc = rMRCov(price_list)
+  #mrc = rMRCov(price_list)
 
   # The asymptotic covariance matrix
   ublb = matrix(create_ublb(n_assets, df_prices, kn), nrow = nrow(mrc), byrow = TRUE)
@@ -39,6 +39,7 @@ MRC_monte_carlo = function(seed){
   ublb = abs(ublb)
   
   IV = make_IV(sigma_list, n_assets)
+  #IV = diag(0.2^2, nrow = n_assets)
   
   lb = IV - ublb
   ub = IV + ublb
@@ -51,7 +52,7 @@ MRC_monte_carlo = function(seed){
   # making each entry N(0,1)
   std_norm = (mrc - IV)/((1/1.96)*ublb)
 
-  mse_matrix = (mrc - IV)
+  mse_matrix = (mrc - IV)^2
 
   return(
     list(
@@ -67,7 +68,7 @@ MRC_monte_carlo = function(seed){
 
 # sim_list = pbmclapply(rep(5, 100), MRC_monte_carlo, mc.cores = 8)
 
-seeds = 401:600
+seeds = 601:700
 
 future::plan(future::multisession(), workers = future::availableCores() - 2)
 tictoc::tic()
@@ -87,7 +88,13 @@ MSE_list = purrr::map(sim_list, .f = "MSE")
 
 sum(TF_sum, na.rm = TRUE)/(n_assets*n_assets*length(seeds))
 
+purrr::map(.x = MSE_list, .f = 1) %>% unlist() %>%  mean() %>% sqrt()
+ sum(as.data.table(MSE_list))
+
+
 hist(sapply(std_norm_list, "[[", 1), breaks = 100, probability = TRUE)
+
+hist(sapply(MSE_list, "[[", 1), breaks = 100, probability = F)
 # -------------------------------------------------------------------------
 
 

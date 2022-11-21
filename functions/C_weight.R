@@ -27,9 +27,9 @@ A = matrix(
 A_inv = solve(A)
 
 C_vec = c(
-  (2*theta*(151/80640))/((1/12)^2), 
-  (2*(1/96))/(theta*(1/12)^2), 
-  (2*(1/6))/((1/12)^2*theta^3)
+  (2*theta*(151/80640)) / ((1/12)^2), 
+  (2*(1/96)) / (theta*(1/12)^2), 
+  (2*(1/6)) / ((1/12)^2*theta^3)
 ) # Skal disse størrelser mon regnes ud fra g eller g1, g2 & g3?
 
 C_weight = C_vec %*% A_inv

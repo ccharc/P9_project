@@ -13,9 +13,9 @@ future::plan(future::multisession(), workers = future::availableCores() - 2)
 
 seeds = 401:405
 tictoc::tic()
-purrr::map(
+furrr::map(
   .x = seeds, 
-  .f = get_HY_est_int_volatility 
+  .f = get_HY_est_int_volatility,
   # .options = furrr::furrr_options(seed = TRUE),
   # .progress = TRUE
 )

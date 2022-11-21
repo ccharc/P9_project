@@ -1,20 +1,21 @@
 # Defining the weigth function g1, g2 and g3 to be used in avar
 g1 = function(x){
-  y <- x-x^2
+  y <- sin(1*x*pi)
   return(y)
 }
 
 g2 = function(x){
-  y <- x^2*(1-x)
+  y <- sin(2*x*pi)
   return(y)
 }
 
 g3 = function(x){
-  y <- x^2*(1-x)^2
+  y <- sin(3*x*pi)
   return(y)
 }
 
 create_Vn = function(g, n_assets, df_prices, kn){
+  browser()
   Y_bar = purrr::map_dfc(
     .x = paste0("V", 1:n_assets) %>% setNames(paste0("Asset_", 1:n_assets)), 
     .f = function(x, kn, g) {df_prices %>% dplyr::pull(x) %>% preaverage(kn, g)},
@@ -41,13 +42,14 @@ create_Vn = function(g, n_assets, df_prices, kn){
 }
 
 create_ublb = function(n_assets, df_prices, kn){ 
+  browser()
   # Computing the asymptotic covariance matrix
   avar = C_weight[1] * create_Vn(g1, n_assets, df_prices, kn) +
     C_weight[2] * create_Vn(g2, n_assets, df_prices, kn) +
     C_weight[3] * create_Vn(g3, n_assets, df_prices, kn)
   
   # Only the diagonals are needed when creating conf. intervals
-  1.96 * nrow(df_prices)^(-1/4) * diag(avar)
+  1.96 * nrow(df_prices)^(-1/4) * sqrt(abs(diag(avar)))
 }
 
 

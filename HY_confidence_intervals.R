@@ -43,13 +43,6 @@ compute_HY_entry_timeinterval = function(
 # define functions used for estimation of conditional covariance matrix 
 
 # f function (time transformation function) (same for all k = 1,...,d)
-ffunction = function(x){
-  1/x
-}
-
-fprime = function(x){
-  -1/x^2
-}
 
 # psi functions
 psi_function = function(s, delta){
@@ -197,6 +190,60 @@ ln = function(n){
 }
 
 # estimate of the spot volatility Sigma
+
+# W needs to be specified outside simulate_price
+W_increments = sqrt(t_max/n)*rnorm(n+1,0,1)
+W = c(0,cumsum(W_increments))
+
+# creating price series
+prices_and_sigmas = purrr::map(
+  .x = rep(n, n_assets) %>% setNames(paste0("Asset", 1:n_assets)), 
+  .f = simulate_price, 
+  W = W
+)
+price_list = purrr::map(prices_and_sigmas, .f = "price")
+sigma_list = purrr::map(prices_and_sigmas, .f = "sigma")
+
+# computing log-prices
+price_list = purrr::map(
+  .x = price_list,
+  .f = function(x) {x %>% mutate("Price" = log(Price))}
+)
+
+# meantimes
+meantimes = purrr::map_dbl(
+  .x = price_list,
+  .f = get_meantime
+)
+
+# tranforming onto an equidistant grid
+equi_price_list = purrr::map(
+  .x = price_list,
+  .f = get_equi_prices
+)
+
+# defining window size (here we use the same n for all assets
+# we choose median{rows(price_list[i])}) -> unsure about this approach
+n_median = purrr::map_dbl(
+  .x = equi_price_list,
+  .f = nrow
+) %>%  
+  median()
+
+kn = floor(theta * sqrt(n_median))
+
+#pre-averaging
+preavg_price_list = purrr::map(
+  .x = equi_price_list,
+  .f = get_preavg_prices, 
+  kn = kn
+)
+
+# estimating integrated volatility using the pre-averaged HY estimator
+HY_estimated_int_volatility = compute_HY(equi_price_list, preavg_price_list, kn = kn)
+
+
+
 
 
 
