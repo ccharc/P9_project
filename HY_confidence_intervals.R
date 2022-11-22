@@ -179,17 +179,12 @@ gammatilde_function = function(u,d,delta){
     purrr::map_dbl(
       .x = int,
       .f = psitilde,
-      delta = delta
+      delta = delta, d = d, u = u
     )
   )
 }
 
-# define sequence ln
-ln = function(n){
-  1 / (log(n))^3
-}
 
-# estimate of the spot volatility Sigma
 
 # W needs to be specified outside simulate_price
 W_increments = sqrt(t_max/n)*rnorm(n+1,0,1)
@@ -247,14 +242,84 @@ HY_estimated_int_volatility = compute_HY(equi_price_list, preavg_price_list, kn 
 
 
 
+# define sequence ln
+ln = function(n){
+  1 / (log(n))^3
+}
+
+ln(n_median)
+
+# function values of gamma function used in Riemann sum of the interval [0,1], delta = 0.01
+gamma_vec = future::plan(future::multisession(), workers = future::availableCores() - 2)
+tictoc::tic()
+furrr::future_map(
+  .x = seq(0,1-0.01,0.01),
+  .f = gamma_function,
+  d = n_assets, delta = 0.01, 
+  .progress = TRUE
+)
+tictoc::toc()
+
+gammabar_vec = rep(gammabar_function(0.01), 1/0.01)
+
+gammatilde_vec = future::plan(future::multisession(), workers = future::availableCores() - 2)
+tictoc::tic()
+furrr::future_map(
+  .x = seq(0,1-0.01,0.01),
+  .f = gammatilde_function,
+  d = n_assets, delta = 0.01, 
+  .progress = TRUE
+)
+tictoc::toc()
+
+# spot volatility estimator (used in the Riemann sum)
+HY_ln = compute_HY_entry_timeinterval(equi_pricetable1 = equi_price_list[[1]],equi_pricetable2 = equi_price_list[[1]], 
+                              preavg_pricetable1 = preavg_price_list[[1]], preavg_pricetable2 = preavg_price_list[[1]],
+                              as.POSIXct("2022-10-31 02:00:00", tz = "EST") + ln(n_median) * 28800)
+
+HY_s = future::plan(future::multisession(), workers = future::availableCores() - 2)
+tictoc::tic()
+furrr::future_map(
+  .x = as.POSIXct("2022-10-31 02:00:00", tz = "EST") + seq(0,1-0.01,0.01)*28800,
+  .f = compute_HY_entry_timeinterval,
+  equi_pricetable1 = equi_price_list[[1]],equi_pricetable2 = equi_price_list[[1]], 
+  preavg_pricetable1 = preavg_price_list[[1]], preavg_pricetable2 = preavg_price_list[[1]],
+  .progress = TRUE
+)
+tictoc::toc()
+
+for (i in 1:length(seq(0,ln(n_median), 0.01))){
+  HY_s[i] = HY_ln
+}
 
 
+HY_s_ln = future::plan(future::multisession(), workers = future::availableCores() - 2)
+tictoc::tic()
+furrr::future_map(
+  .x = as.POSIXct("2022-10-31 02:00:00", tz = "EST") + (seq(0,1-0.01,0.01)-ln(n_median))*28800,
+  .f = compute_HY_entry_timeinterval,
+  equi_pricetable1 = equi_price_list[[1]],equi_pricetable2 = equi_price_list[[1]], 
+  preavg_pricetable1 = preavg_price_list[[1]], preavg_pricetable2 = preavg_price_list[[1]],
+  .progress = TRUE
+)
+tictoc::toc()
 
+HY_s_ln[1]
 
+for (i in 1:length(seq(0,ln(n_median), 0.01))){
+  HY_s_ln[i] = 0
+}
 
+spot_vol = (HY_s - HY_s_ln) / ln(n_median)
 
+# covariance of the noise process estimator (used in Riemann sum)
+noisy_cov = - 1/length(price_list[[1]]$Price) * sum(diff(price_list[[1]]$Price)^2)
 
-
+# conditional covariance matrix 
+(0.01 * 1/psi^4 * ( theta * ( gamma_vec * spot_vol^2 + gamma_vec * spot_vol^2 ) +
+           4/theta * ( noisy_cov * gammabar_vec * spot_vol ) +
+           1/(theta^3) * ( noisy_cov^2 * gammatilde_vec + noisy_cov^2 * gammatilde_vec) ) ) %>% 
+  sum()
 
 
 
