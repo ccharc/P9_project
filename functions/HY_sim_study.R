@@ -12,13 +12,15 @@ HY_sim_study = function(seeds, lambda){
   bias = purrr::map_dbl(sim_list, .f = "bias")
   MAE = purrr::map_dbl(sim_list, .f = "MAE")
   RMSE = purrr::map_dbl(sim_list, .f = "RMSE")
-  # HY_list = purrr::map(sim_list, .f = "HY")
-  # QV_list = purrr::map(sim_list, .f = "QV")
+  HY_list = purrr::map(sim_list, .f = "HY")
+  QV_list = purrr::map(sim_list, .f = "QV")
   
   results = list(
     "bias" = bias,
     "MAE" = MAE,
-    "RMSE" = RMSE
+    "RMSE" = RMSE,
+    "HY" = HY_list,
+    "QV" = QV_list
   )
   
   fs::dir_create("results")

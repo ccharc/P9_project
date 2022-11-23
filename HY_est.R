@@ -1,24 +1,9 @@
 library(ggplot2)
+library(dplyr)
 library(highfrequency)
 library(data.table)
-library(dplyr)
 source("config.R")
 R.utils::sourceDirectory("functions", modifiedOnly = FALSE)
-
-# HY estimator ------------------------------------------------------------
-seed = 101
-future::plan(future::multisession(), workers = future::availableCores() - 2)
-
-seeds = 401:405
-tictoc::tic()
-HY_results = furrr::future_map2(
-  .x = seeds,
-  .y = lambda2,
-  .f = get_HY_est_int_volatility,
-  .options = furrr::furrr_options(seed = TRUE),
-  .progress = TRUE
-)
-tictoc::toc()
 
 
 

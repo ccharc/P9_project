@@ -57,9 +57,9 @@ MRC_monte_carlo = function(seed, lambda){
       "std_norm" = std_norm, 
       "bias" = bias,
       "MAE" = mae,
-      "RMSE" = rmse
-      # "MRC" = mrc, 
-      # "QV" = IV
+      "RMSE" = rmse,
+      "MRC" = mrc,
+      "QV" = IV
     )
   )
 }
@@ -80,8 +80,8 @@ MRC_sim_study = function(seeds, lambda){
   bias = purrr::map_dbl(sim_list, .f = "bias")
   MAE = purrr::map_dbl(sim_list, .f = "MAE")
   RMSE = purrr::map_dbl(sim_list, .f = "RMSE")
-  # MRC_list = purrr::map(sim_list, .f = "MRC")
-  # QV_list = purrr::map(sim_list, .f = "QV")
+  MRC_list = purrr::map(sim_list, .f = "MRC")
+  QV_list = purrr::map(sim_list, .f = "QV")
   
   number_of_na = length(which(is.na(TF_sum)))
   cvg_prob = sum(TF_sum, na.rm = TRUE)/(n_assets^2*length(seeds) - number_of_na*n_assets^2)
@@ -92,7 +92,9 @@ MRC_sim_study = function(seeds, lambda){
     "bias" = bias,
     "MAE" = MAE,
     "RMSE" = RMSE,
-    "coverage_prob" = cvg_prob
+    "coverage_prob" = cvg_prob,
+    "MRC" = MRC_list,
+    "QV" = QV_list
   )
   
   fs::dir_create("results")

@@ -64,9 +64,9 @@ get_HY_est_int_volatility = function(seed, lambda){
     list(
       "bias" = bias,
       "MAE" = mae,
-      "RMSE" = rmse
-      # "HY" = HY, 
-      # "QV" = IV
+      "RMSE" = rmse,
+      "HY" = HY,
+      "QV" = IV
     )
   )
 }
