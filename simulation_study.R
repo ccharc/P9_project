@@ -5,16 +5,17 @@ library(data.table)
 source("config.R")
 R.utils::sourceDirectory("functions", modifiedOnly = FALSE)
 
-future::plan(future::multisession(), workers = future::availableCores() - 2)
 seeds = 1:1000
 
 theta = 0.8
 gamma = sqrt(0.01)
-lambda = lambda1
+lambda = lambda2
+
+future::plan(future::multisession(), workers = future::availableCores() - 2)
 
 MRC_results = MRC_sim_study(seeds, lambda)
 
-
+HY_results = HY_sim_study(seeds, lambda)
 
 
 

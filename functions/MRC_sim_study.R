@@ -47,15 +47,15 @@ MRC_monte_carlo = function(seed, lambda){
   # making each entry N(0,1)
   std_norm = (mrc - IV)/((1/1.96)*ublb)
   
-  bias_matrix = (IV - mrc)
-  mae = mean(abs(mrc - IV))
-  rmse = sqrt(mean((mrc - IV)^2))
+  bias = mean(IV - mrc, na.rm = TRUE)
+  mae = mean(abs(mrc - IV), na.rm = TRUE)
+  rmse = sqrt(mean((mrc - IV)^2, na.rm = TRUE))
   
   return(
     list(
       "TF_sum" = TF_sum, 
       "std_norm" = std_norm, 
-      "bias" = bias_matrix,
+      "bias" = bias,
       "MAE" = mae,
       "RMSE" = rmse
       # "MRC" = mrc, 
@@ -66,6 +66,7 @@ MRC_monte_carlo = function(seed, lambda){
 
 MRC_sim_study = function(seeds, lambda){
   tictoc::tic()
+  
   sim_list = furrr::future_map(
     .x = seeds, 
     .f = MRC_monte_carlo,
@@ -76,7 +77,7 @@ MRC_sim_study = function(seeds, lambda){
   
   TF_sum = purrr::map_dbl(sim_list, .f = "TF_sum")
   std_norm_list = purrr::map(sim_list, .f = "std_norm")
-  bias_list = purrr::map(sim_list, .f = "bias")
+  bias = purrr::map_dbl(sim_list, .f = "bias")
   MAE = purrr::map_dbl(sim_list, .f = "MAE")
   RMSE = purrr::map_dbl(sim_list, .f = "RMSE")
   # MRC_list = purrr::map(sim_list, .f = "MRC")
@@ -88,7 +89,7 @@ MRC_sim_study = function(seeds, lambda){
   results = list(
     "TF_sum" = TF_sum,
     "std_norm" = std_norm_list,
-    "bias" = bias_list,
+    "bias" = bias,
     "MAE" = MAE,
     "RMSE" = RMSE,
     "coverage_prob" = cvg_prob
