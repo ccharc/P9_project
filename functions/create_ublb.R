@@ -15,6 +15,7 @@ g3 = function(x){
 }
 
 create_Vn = function(g, n_assets, df_prices, kn){
+  browser()
   Y_bar = purrr::map_dfc(
     .x = paste0("V", 1:n_assets) %>% setNames(paste0("Asset_", 1:n_assets)), 
     .f = function(x, kn, g) {df_prices %>% dplyr::pull(x) %>% preaverage(kn, g)},
@@ -41,6 +42,7 @@ create_Vn = function(g, n_assets, df_prices, kn){
 }
 
 create_ublb = function(n_assets, df_prices, kn){ 
+  browser()
   # Computing the asymptotic covariance matrix
   avar = C_weight[1] * create_Vn(g1, n_assets, df_prices, kn) +
     C_weight[2] * create_Vn(g2, n_assets, df_prices, kn) +

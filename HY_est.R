@@ -1,14 +1,25 @@
 library(ggplot2)
-library(dplyr)
 library(highfrequency)
+# library(xts)
 library(data.table)
+library(dplyr)
 source("config.R")
 R.utils::sourceDirectory("functions", modifiedOnly = FALSE)
 
+# HY estimator ------------------------------------------------------------
+psi = 1/4
+seed = 101
+future::plan(future::multisession(), workers = future::availableCores() - 2)
 
-
-
-
+seeds = 401:405
+tictoc::tic()
+furrr::map(
+  .x = seeds, 
+  .f = get_HY_est_int_volatility,
+  # .options = furrr::furrr_options(seed = TRUE),
+  # .progress = TRUE
+)
+tictoc::toc()
 
 
 # Confidence intervals ----------------------------------------------------

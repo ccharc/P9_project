@@ -1,4 +1,4 @@
-simulate_price = function(n, lambda, W)
+simulate_price = function(n, W)
 {
   # Brownian motions
   BM_increments = sqrt(t_max/n)*rnorm(n+1,0,1)
@@ -46,38 +46,43 @@ simulate_price = function(n, lambda, W)
     cumsum(s)[cumsum(s) <= 1]
   }
 
-  wait_times = get_poisson(lambda, n)
+  wait_times1 = get_poisson(lambda1, n)
+  wait_times2 = get_poisson(lambda2, n)
   Y_step = stepfun(x = (1:n)/n, y = Y, f = 0, right = 0)
-  Y_async = Y_step(wait_times)
+  Y_async = Y_step(wait_times1)
 
-  # tibble::tibble("Time" = wait_times, "Price" = Y_async)
-  datetime = as.POSIXct("2022-10-31 01:00:00", tz = "EST") + lubridate::seconds(wait_times*n)
+  # tibble::tibble("Time" = wait_times1, "Price" = Y_async)
+  datetime = as.POSIXct("2022-10-31 01:00:00", tz = "EST") + lubridate::seconds(wait_times1*n)
   price = data.table("DT" = datetime, "Price" = exp(Y_async))
   return(list("price" = price, "sigma" = sigma))
 }
 
 
-
-# df = tibble::tibble("Time" = wait_times1, "Price" = Y_async)
+# simulate_price = function(n, W)
+# {
+#   # Brownian motions
+#   BM_increments = sqrt(t_max/n)*rnorm(n,0,1)
+#   BM = c(0,cumsum(BM_increments))
+#   
 # 
-# # Plot
-# gg = ggplot() +
-#   geom_line(aes(x = (0:n)/n, y = exp(X), color = "Efficient")) +
-#   geom_line(aes(x = (0:n)/n, y = exp(Y), color = "Noisy"), linetype = "dashed") +
-#   geom_line(aes(x = wait_times1, y = exp(Y_async), color = "Non-synchronous")) +
-#   labs(
-#     title = "Simulation of prices", 
-#     subtitle = paste0("Number of observations: ", n),
-#     x = "Time", y = "Price", color = ""
-#   ) +
-#   scale_color_manual(values = c(
-#     "Efficient" = "tomato", 
-#     "Noisy" = "steelblue", 
-#     "Non-synchronous" = "black"
-#   )) +
-#   guides(color = guide_legend(
-#     override.aes = list(linetype = c("solid", "dashed", "solid"))
-#   ))
+#   
+#   # sigma spot volatility
+#   sigma = 0.2
+#   
+#   # Simulate efficient log prices X (using Euler scheme)
+#   t = seq(0, 1, t_max/n)
+#   X = X0*exp( ( -sigma^2 / 2 ) * t + sigma * BM )
+#   
 # 
-# print(gg)
+#   
+#   # Noisy log prices Y
+#   omega = 0.001
+#   micro_noise = rnorm(n = length(X), mean = 0, sd = omega) # perhaps not squared
+#   Y = X + micro_noise
+#   
+#   # tibble::tibble("Time" = wait_times1, "Price" = Y_async)
+#   datetime = as.POSIXct("2022-10-31 01:00:00", tz = "EST") + lubridate::seconds(seq(0,1, 1/n)*n)
+#   price = data.table("DT" = datetime, "Price" = Y)
+#   return(list("price" = price, "sigma" = sigma))
+# }
 

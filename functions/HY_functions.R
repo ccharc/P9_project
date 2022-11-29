@@ -1,4 +1,6 @@
-get_HY_est_int_volatility = function(seed, lambda){
+get_HY_est_int_volatility = function(seed){
+  # tictoc::tic()
+  
   set.seed(seed)
   
   # W needs to be specified outside simulate_price
@@ -6,9 +8,8 @@ get_HY_est_int_volatility = function(seed, lambda){
   W = c(0,cumsum(W_increments))
   
   # creating price series
-  prices_and_sigmas = purrr::map2(
+  prices_and_sigmas = purrr::map(
     .x = rep(n, n_assets) %>% setNames(paste0("Asset", 1:n_assets)), 
-    .y = lambda,
     .f = simulate_price, 
     W = W
   )
@@ -51,24 +52,11 @@ get_HY_est_int_volatility = function(seed, lambda){
   )
   
   # estimating integrated volatility using the pre-averaged HY estimator
-  HY = compute_HY(equi_price_list, preavg_price_list, kn = kn)
+  HY_estimated_int_volatility = compute_HY(equi_price_list, preavg_price_list, kn = kn)
   
-  IV = make_IV(sigma_list, n_assets)
+  # tictoc::toc()
   
-  bias_matrix = as.matrix(IV - HY)
-  bias = mean(bias_matrix)
-  mae = mean(abs(bias_matrix))
-  rmse = sqrt(mean((bias_matrix)^2))
-  
-  return(
-    list(
-      "bias" = bias,
-      "MAE" = mae,
-      "RMSE" = rmse,
-      "HY" = HY,
-      "QV" = IV
-    )
-  )
+  return(HY_estimated_int_volatility)
 }
 
 get_meantime = function(pricetable){
