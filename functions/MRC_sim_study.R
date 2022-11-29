@@ -100,7 +100,7 @@ MRC_sim_study = function(seeds, lambda){
   fs::dir_create("results")
   file_path = paste0(
     "results/MRC_theta_", theta, 
-    "_gamma_", gamma, 
+    "_gamma_", gamma^2, 
     "_lambda_", paste(lambda, sep = "", collapse = "")
   ) %>% 
     stringr::str_replace_all(pattern = "\\.", replacement = "")
