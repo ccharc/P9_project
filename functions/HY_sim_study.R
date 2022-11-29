@@ -1,12 +1,12 @@
 HY_sim_study = function(seeds, lambda){
   tictoc::tic()
   
-  sim_list = furrr::future_map2(
+  sim_list = furrr::future_map(
     .x = seeds,
-    .y = lambda,
     .f = get_HY_est_int_volatility,
     .options = furrr::furrr_options(seed = TRUE),
-    .progress = TRUE
+    .progress = TRUE,
+    lambda = lambda
   )
   
   bias = purrr::map_dbl(sim_list, .f = "bias")
