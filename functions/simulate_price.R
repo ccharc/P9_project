@@ -6,7 +6,7 @@ simulate_price = function(n, lambda, W)
 
   # OU specification for varrho
   varrho = c()
-  varrho0 = rnorm(n = 1, mean = 0, sd = (-2*alpha)^(-1))
+  varrho0 = rnorm(n = 1, mean = 0, sd = sqrt((-2*alpha)^(-1)))
   varrho[1] = varrho0
   for (i in 1:n) {
     varrho[i+1] = varrho[i] + alpha * varrho[i] + (BM[i+1] - BM[i])
