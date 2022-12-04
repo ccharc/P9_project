@@ -66,8 +66,8 @@ psi_function = function(s, delta){
   
   
   psi = function(s, delta){
-    int1 = seq(0,1/2,delta)
-    int2 = seq(1/2 + delta,1,delta)
+    int1 = seq(0,1/2 - delta,delta)
+    int2 = seq(1/2,1 - delta,delta)
     
     # sum( c(get_integrand1(s,int1)*delta, get_integrand2(s,int2)*delta) )
     
@@ -250,9 +250,9 @@ ln = function(n){
 ln(n_median)
 
 # function values of gamma function used in Riemann sum of the interval [0,1], delta = 0.01
-gamma_vec = future::plan(future::multisession(), workers = future::availableCores() - 2)
+future::plan(future::multisession(), workers = future::availableCores() - 2)
 tictoc::tic()
-furrr::future_map(
+gamma_vec = furrr::future_map(
   .x = seq(0,1-0.01,0.01),
   .f = gamma_function,
   d = n_assets, delta = 0.01, 
@@ -262,9 +262,9 @@ tictoc::toc()
 
 gammabar_vec = rep(gammabar_function(0.01), 1/0.01)
 
-gammatilde_vec = future::plan(future::multisession(), workers = future::availableCores() - 2)
+future::plan(future::multisession(), workers = future::availableCores() - 2)
 tictoc::tic()
-furrr::future_map(
+gammatilde_vec = furrr::future_map(
   .x = seq(0,1-0.01,0.01),
   .f = gammatilde_function,
   d = n_assets, delta = 0.01, 
@@ -277,9 +277,9 @@ HY_ln = compute_HY_entry_timeinterval(equi_pricetable1 = equi_price_list[[1]],eq
                               preavg_pricetable1 = preavg_price_list[[1]], preavg_pricetable2 = preavg_price_list[[1]],
                               as.POSIXct("2022-10-31 02:00:00", tz = "EST") + ln(n_median) * 28800)
 
-HY_s = future::plan(future::multisession(), workers = future::availableCores() - 2)
+future::plan(future::multisession(), workers = future::availableCores() - 2)
 tictoc::tic()
-furrr::future_map(
+HY_s = furrr::future_map(
   .x = as.POSIXct("2022-10-31 02:00:00", tz = "EST") + seq(0,1-0.01,0.01)*28800,
   .f = compute_HY_entry_timeinterval,
   equi_pricetable1 = equi_price_list[[1]],equi_pricetable2 = equi_price_list[[1]], 
@@ -293,9 +293,9 @@ for (i in 1:length(seq(0,ln(n_median), 0.01))){
 }
 
 
-HY_s_ln = future::plan(future::multisession(), workers = future::availableCores() - 2)
+future::plan(future::multisession(), workers = future::availableCores() - 2)
 tictoc::tic()
-furrr::future_map(
+HY_s_ln = furrr::future_map(
   .x = as.POSIXct("2022-10-31 02:00:00", tz = "EST") + (seq(0,1-0.01,0.01)-ln(n_median))*28800,
   .f = compute_HY_entry_timeinterval,
   equi_pricetable1 = equi_price_list[[1]],equi_pricetable2 = equi_price_list[[1]], 
@@ -304,13 +304,11 @@ furrr::future_map(
 )
 tictoc::toc()
 
-HY_s_ln[1]
-
 for (i in 1:length(seq(0,ln(n_median), 0.01))){
   HY_s_ln[i] = 0
 }
 
-spot_vol = (HY_s - HY_s_ln) / ln(n_median)
+spot_vol = (unlist(HY_s) - unlist(HY_s_ln)) / ln(n_median)
 
 # covariance of the noise process estimator (used in Riemann sum)
 noisy_cov = - 1/length(price_list[[1]]$Price) * sum(diff(price_list[[1]]$Price)^2)
