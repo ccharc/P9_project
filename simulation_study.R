@@ -9,7 +9,7 @@ seeds = 1:1000
 
 theta = 0.8
 gamma = sqrt(0.01)
-lambda = lambda2
+lambda = lambda1
 
 future::plan(future::multisession(), workers = future::availableCores() - 2)
 
@@ -23,11 +23,14 @@ HY_results = HY_sim_study(seeds, lambda)
 
 # -------------------------------------------------------------------------
 
-results = readRDS("results/MRC_theta_08_gamma_01_lambda_5555120")
+results = readRDS("results/MRC_theta_08_gamma_001_lambda_246810")
+sum(results$TF_sum, na.rm = T)/25000
+mean(results$MAE)
 
 
 
-
+plot(density(sapply(results$std_norm, "[[", 8), na.rm = TRUE), ylim = c(0, 0.5), xlim = c(-5, 5))
+curve(dnorm(x), add = TRUE, col = "red")
 # plots -------------------------------------------------------------------
 
 
