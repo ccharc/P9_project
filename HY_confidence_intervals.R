@@ -1,3 +1,14 @@
+library(dplyr)
+library(highfrequency)
+library(data.table)
+source("config.R")
+R.utils::sourceDirectory("functions", modifiedOnly = FALSE)
+
+theta = 0.8
+gamma = sqrt(0.01)
+lambda = lambda2
+n_assets = 1
+
 # Confidence intervals ----------------------------------------------------
 
 
@@ -24,25 +35,37 @@ compute_HY_entry_timeinterval = function(
   Price1 = Price1[1:(nrow(DT1_tib))]
   Price2 = Price2[1:(nrow(DT2_tib))]
   
-  check_condition = function(y_left, y_right){
-    DT1_tib$left < y_left & y_left <= DT1_tib$right | 
-      DT1_tib$left < y_right & y_right <= DT1_tib$right
-  }
+  left1 = matrix(
+    rep(DT1_tib$left, nrow(DT2_tib)), 
+    ncol = length(DT1_tib$left), 
+    byrow = TRUE
+  )
+  right1 = matrix(
+    rep(DT1_tib$right, nrow(DT2_tib)), 
+    ncol = length(DT1_tib$right), 
+    byrow = TRUE
+  )
+  condition_matrix = t(left1 < DT2_tib$left & DT2_tib$left <= right1 |
+                         left1 < DT2_tib$right & DT2_tib$right <= right1)
   
-  condition_df = purrr::map2_dfc(DT2_tib$left, DT2_tib$right, check_condition) %>% 
-    mutate(across(everything(), as.integer))
+  # check_condition = function(y_left, y_right){
+  #   DT1_tib$left < y_left & y_left <= DT1_tib$right | 
+  #     DT1_tib$left < y_right & y_right <= DT1_tib$right
+  # }
+  # 
+  # condition_df = purrr::map2_dfc(DT2_tib$left, DT2_tib$right, check_condition) %>% 
+  #   mutate(across(everything(), as.integer))
+  
   
   price_matrix = Price1 %*% t(Price2)
   
-  1/((psi*kn)^2) * sum(c(price_matrix * as.matrix(condition_df)))
+  1/((psi*kn)^2) * sum(c(price_matrix * condition_matrix))
   
 }
 
 
 
 # define functions used for estimation of conditional covariance matrix 
-
-# f function (time transformation function) (same for all k = 1,...,d)
 
 # psi functions
 psi_function = function(s, delta){
@@ -93,8 +116,8 @@ psibar_function = function(s, delta){
   }
   
   psibar = function(s, delta){
-    int1 = seq(0,1/2,delta)
-    int2 = seq(1/2 + delta,1,delta)
+    int1 = seq(0,1/2 - delta,delta)
+    int2 = seq(1/2,1 - delta,delta)
     
     # sum( c(get_integrand1(s,int1)*delta, get_integrand2(s,int2)*delta) )
     
@@ -119,8 +142,8 @@ psitilde_function = function(s, delta){
   }
   
   psitilde = function(s, delta){
-    int1 = seq(0,1/2,delta)
-    int2 = seq(1/2 + delta,1,delta)
+    int1 = seq(0,1/2 - delta,delta)
+    int2 = seq(1/2,1 - delta,delta)
     
     # sum( c(get_integrand1(s,int1)*delta, get_integrand2(s,int2)*delta) )
     
@@ -135,7 +158,7 @@ psitilde_function = function(s, delta){
 # gamma functions
 gamma_function = function(u, d, delta){
   
-  int = seq(-2,2,delta)
+  int = seq(-2,2-delta,delta)
   
   psi = function(u, d, s, delta){
     u * d * psi_function(s, delta) * psi_function(s, delta) * delta
@@ -152,7 +175,7 @@ gamma_function = function(u, d, delta){
 
 gammabar_function = function(delta){
   
-  int = seq(-2,2,delta)
+  int = seq(-2,2-delta,delta)
   
   psibar = function(s, delta){
     psibar_function(s, delta) * psibar_function(s, delta) * delta
@@ -169,7 +192,7 @@ gammabar_function = function(delta){
 
 gammatilde_function = function(u,d,delta){
   
-  int = seq(-2,2,delta)
+  int = seq(-2,2-delta,delta)
   
   psitilde = function(u,d,s,delta){
     - 1/d * 1/u^2 * psitilde_function(s, delta) * psitilde_function(s, delta) * delta
@@ -185,14 +208,18 @@ gammatilde_function = function(u,d,delta){
 }
 
 
+# generate price process --------------------------------------------------
+
+set.seed(1)
 
 # W needs to be specified outside simulate_price
 W_increments = sqrt(t_max/n)*rnorm(n+1,0,1)
 W = c(0,cumsum(W_increments))
 
 # creating price series
-prices_and_sigmas = purrr::map(
+prices_and_sigmas = purrr::map2(
   .x = rep(n, n_assets) %>% setNames(paste0("Asset", 1:n_assets)), 
+  .y = lambda,
   .f = simulate_price, 
   W = W
 )
@@ -234,13 +261,8 @@ preavg_price_list = purrr::map(
   kn = kn
 )
 
-# estimating integrated volatility using the pre-averaged HY estimator
-HY_estimated_int_volatility = compute_HY(equi_price_list, preavg_price_list, kn = kn)
 
-
-
-
-
+# estimator of conditional variance ---------------------------------------
 
 # define sequence ln
 ln = function(n){
@@ -253,23 +275,23 @@ ln(n_median)
 future::plan(future::multisession(), workers = future::availableCores() - 2)
 tictoc::tic()
 gamma_vec = furrr::future_map(
-  .x = seq(0,1-0.01,0.01),
+  .x = seq(0,1-0.001,0.001),
   .f = gamma_function,
-  d = n_assets, delta = 0.01, 
+  d = n_assets, delta = 0.001, 
   .progress = TRUE
-)
+) %>% unlist()
 tictoc::toc()
 
-gammabar_vec = rep(gammabar_function(0.01), 1/0.01)
+gammabar_vec = rep(gammabar_function(0.001), 1/0.001)
 
 future::plan(future::multisession(), workers = future::availableCores() - 2)
 tictoc::tic()
 gammatilde_vec = furrr::future_map(
-  .x = seq(0,1-0.01,0.01),
+  .x = c(0.000001, seq(0.001,1-0.001,0.001)),
   .f = gammatilde_function,
-  d = n_assets, delta = 0.01, 
+  d = n_assets, delta = 0.001, 
   .progress = TRUE
-)
+) %>% unlist()
 tictoc::toc()
 
 # spot volatility estimator (used in the Riemann sum)
@@ -280,7 +302,7 @@ HY_ln = compute_HY_entry_timeinterval(equi_pricetable1 = equi_price_list[[1]],eq
 future::plan(future::multisession(), workers = future::availableCores() - 2)
 tictoc::tic()
 HY_s = furrr::future_map(
-  .x = as.POSIXct("2022-10-31 02:00:00", tz = "EST") + seq(0,1-0.01,0.01)*28800,
+  .x = as.POSIXct("2022-10-31 02:00:00", tz = "EST") + seq(0,1-0.001,0.001)*28800,
   .f = compute_HY_entry_timeinterval,
   equi_pricetable1 = equi_price_list[[1]],equi_pricetable2 = equi_price_list[[1]], 
   preavg_pricetable1 = preavg_price_list[[1]], preavg_pricetable2 = preavg_price_list[[1]],
@@ -288,7 +310,7 @@ HY_s = furrr::future_map(
 )
 tictoc::toc()
 
-for (i in 1:length(seq(0,ln(n_median), 0.01))){
+for (i in 1:length(seq(0,ln(n_median), 0.001))){
   HY_s[i] = HY_ln
 }
 
@@ -296,7 +318,7 @@ for (i in 1:length(seq(0,ln(n_median), 0.01))){
 future::plan(future::multisession(), workers = future::availableCores() - 2)
 tictoc::tic()
 HY_s_ln = furrr::future_map(
-  .x = as.POSIXct("2022-10-31 02:00:00", tz = "EST") + (seq(0,1-0.01,0.01)-ln(n_median))*28800,
+  .x = as.POSIXct("2022-10-31 02:00:00", tz = "EST") + (seq(0,1-0.001,0.001)-ln(n_median))*28800,
   .f = compute_HY_entry_timeinterval,
   equi_pricetable1 = equi_price_list[[1]],equi_pricetable2 = equi_price_list[[1]], 
   preavg_pricetable1 = preavg_price_list[[1]], preavg_pricetable2 = preavg_price_list[[1]],
