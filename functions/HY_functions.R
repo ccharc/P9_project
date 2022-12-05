@@ -113,17 +113,30 @@ compute_HY_entry = function(
     mutate(right = lead(DT2, kn-1)) %>% 
     filter(row_number() <= length(Price2))
   
-  check_condition = function(y_left, y_right){
-    DT1_tib$left < y_left & y_left <= DT1_tib$right | 
-      DT1_tib$left < y_right & y_right <= DT1_tib$right
-  }
+  left1 = matrix(
+    rep(DT1_tib$left, nrow(DT2_tib)), 
+    ncol = length(DT1_tib$left), 
+    byrow = TRUE
+  )
+  right1 = matrix(
+    rep(DT1_tib$right, nrow(DT2_tib)), 
+    ncol = length(DT1_tib$right), 
+    byrow = TRUE
+  )
+  condition_matrix = t(left1 < DT2_tib$left & DT2_tib$left <= right1 |
+                    left1 < DT2_tib$right & DT2_tib$right <= right1)
   
-  condition_df = furrr::future_map2_dfc(DT2_tib$left, DT2_tib$right, check_condition) %>% 
-    mutate(across(everything(), as.integer)) %>% suppressMessages()
+  # check_condition = function(y_left, y_right){
+  #   DT1_tib$left < y_left & y_left <= DT1_tib$right | 
+  #     DT1_tib$left < y_right & y_right <= DT1_tib$right
+  # }
+  # 
+  # condition_df = furrr::future_map2_dfc(DT2_tib$left, DT2_tib$right, check_condition) %>% 
+  #   mutate(across(everything(), as.integer)) %>% suppressMessages()
   
   price_matrix = Price1 %*% t(Price2)
   
-  1/((psi*kn)^2) * sum(c(price_matrix * as.matrix(condition_df)))
+  1/((psi*kn)^2) * sum(c(price_matrix * condition_matrix))
   
   # 
   # HY_entry = 0
@@ -143,14 +156,14 @@ compute_HY = function(equi_pricetable, preavg_pricetable, kn){
     .x = equi_pricetable,
     .y = preavg_pricetable,
     .f = function(x, y) {
-      furrr::future_map2_dbl(
+      purrr::map2_dbl(
         .x = equi_pricetable,
         .y = preavg_pricetable,
         .f = compute_HY_entry,
         equi_pricetable1 = x,
         preavg_pricetable1 = y,
-        kn = kn,
-        .progress = FALSE
+        kn = kn
+        # .progress = FALSE
       )
     },
     .progress = FALSE
