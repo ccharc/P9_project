@@ -178,3 +178,23 @@ get_data_df = function(){
   furrr::future_map(selected_assets, mutate_data)
 }
 
+compute_MRC_data = function(df_prices, n_assets)
+{
+  kn = floor(theta * nrow(df_prices)^(1/2))
+  
+  Y_bar = purrr::map_dfc(
+    .x = asset_names %>% setNames(asset_names), 
+    .f = function(x, kn, g) {df_prices %>% dplyr::pull(x) %>% preaverage(kn, g)},
+    kn = kn, 
+    g = gfunction
+  ) %>%
+    as.matrix() 
+  
+  Y_sum = t(Y_bar) %*% Y_bar    # equals the same as the for loop above
+  
+  psi1kn = kn * sum((gfunction((1:kn)/kn) - gfunction(((1:kn) - 1)/kn))^2)
+  psi2kn = 1/kn * sum(gfunction((1:kn)/kn)^2)
+  
+  Y_sum * (nrow(df_prices)/(nrow(df_prices)-kn+2)) * (1/((1/12)*kn)) - psi1kn * (1/(theta^2 * psi2kn)) * 
+    (1/(2*nrow(df_prices))) * t(diff(as.matrix(df_prices))) %*% diff(as.matrix(df_prices))
+}
