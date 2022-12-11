@@ -39,7 +39,7 @@ get_HY_est_int_volatility = function(seed, lambda){
     .x = equi_price_list,
     .f = nrow
   ) %>%  
-    median()
+    sum()     # det her skal nok ændres fra median() til sum()
   
   kn = floor(theta * sqrt(n_median))
   
@@ -109,9 +109,19 @@ compute_HY_entry = function(
   DT1_tib = tibble("left" = DT1) %>% 
     mutate(right = lead(DT1, kn-1)) %>% 
     filter(row_number() <= length(Price1))
+  
+  
   DT2_tib = tibble("left" = DT2) %>% 
     mutate(right = lead(DT2, kn-1)) %>% 
     filter(row_number() <= length(Price2))
+  
+  # check_condition = function(y_left, y_right){
+  #   DT1_tib$left < y_left & y_left <= DT1_tib$right | 
+  #     DT1_tib$left < y_right & y_right <= DT1_tib$right
+  # }
+  # 
+  # condition_df = purrr::map2_dfc(DT2_tib$left, DT2_tib$right, check_condition) %>% 
+  #   mutate(across(everything(), as.integer)) %>% suppressMessages()
   
   left1 = matrix(
     rep(DT1_tib$left, nrow(DT2_tib)), 
@@ -123,16 +133,24 @@ compute_HY_entry = function(
     ncol = length(DT1_tib$right), 
     byrow = TRUE
   )
-  condition_matrix = t(left1 < DT2_tib$left & DT2_tib$left <= right1 |
-                    left1 < DT2_tib$right & DT2_tib$right <= right1)
+  left2 = matrix(
+    rep(DT2_tib$left, nrow(DT1_tib)), 
+    ncol = length(DT2_tib$left), 
+    byrow = TRUE
+  )
+  right2 = matrix(
+    rep(DT2_tib$right, nrow(DT1_tib)), 
+    ncol = length(DT2_tib$right), 
+    byrow = TRUE
+  )
   
-  # check_condition = function(y_left, y_right){
-  #   DT1_tib$left < y_left & y_left <= DT1_tib$right | 
-  #     DT1_tib$left < y_right & y_right <= DT1_tib$right
-  # }
-  # 
-  # condition_df = furrr::future_map2_dfc(DT2_tib$left, DT2_tib$right, check_condition) %>% 
-  #   mutate(across(everything(), as.integer)) %>% suppressMessages()
+  condition_matrix = t(
+    left1 < DT2_tib$left & DT2_tib$left < right1 |
+      left1 < DT2_tib$right & DT2_tib$right <= right1
+  ) | (
+    left2 < DT1_tib$left & DT1_tib$left < right2 |
+      left2 < DT1_tib$right & DT1_tib$right <= right2
+  )
   
   price_matrix = Price1 %*% t(Price2)
   
@@ -152,7 +170,7 @@ compute_HY_entry = function(
 }
 
 compute_HY = function(equi_pricetable, preavg_pricetable, kn){
-  furrr::future_map2_dfc(
+  purrr::map2_dfc(
     .x = equi_pricetable,
     .y = preavg_pricetable,
     .f = function(x, y) {
@@ -165,7 +183,7 @@ compute_HY = function(equi_pricetable, preavg_pricetable, kn){
         kn = kn
         # .progress = FALSE
       )
-    },
-    .progress = FALSE
+    }
+    # .progress = FALSE
   )
 }
