@@ -2,87 +2,49 @@ get_data_df = function(){
   
   tictoc::tic()
   
+  months = stringr::str_pad(1:12, width = 2, side = "left", pad = "0")
+  
   # selected assets
   assets = list(
     "AUDNZD" = c(
-      "Data/DAT_NT_AUDNZD_T_LAST_201801.csv",
-      "Data/DAT_NT_AUDNZD_T_LAST_201802.csv",
-      "Data/DAT_NT_AUDNZD_T_LAST_201803.csv",
-      "Data/DAT_NT_AUDNZD_T_LAST_201804.csv",
-      "Data/DAT_NT_AUDNZD_T_LAST_201805.csv",
-      "Data/DAT_NT_AUDNZD_T_LAST_201806.csv"
+      paste0("Data/DAT_NT_AUDNZD_T_LAST_2018", months, ".csv"),
+      paste0("Data/DAT_NT_AUDNZD_T_LAST_2019", months, ".csv")
     ),
     "EURNOK" = c(
-      "Data/DAT_NT_EURNOK_T_LAST_201801.csv",
-      "Data/DAT_NT_EURNOK_T_LAST_201802.csv",
-      "Data/DAT_NT_EURNOK_T_LAST_201803.csv",
-      "Data/DAT_NT_EURNOK_T_LAST_201804.csv",
-      "Data/DAT_NT_EURNOK_T_LAST_201805.csv",
-      "Data/DAT_NT_EURNOK_T_LAST_201806.csv"
+      paste0("Data/DAT_NT_EURNOK_T_LAST_2018", months, ".csv"),
+      paste0("Data/DAT_NT_EURNOK_T_LAST_2019", months, ".csv")
     ),
     "EURPLN" = c(
-      "Data/DAT_NT_EURPLN_T_LAST_201801.csv",
-      "Data/DAT_NT_EURPLN_T_LAST_201802.csv",
-      "Data/DAT_NT_EURPLN_T_LAST_201803.csv",
-      "Data/DAT_NT_EURPLN_T_LAST_201804.csv",
-      "Data/DAT_NT_EURPLN_T_LAST_201805.csv",
-      "Data/DAT_NT_EURPLN_T_LAST_201806.csv"
+      paste0("Data/DAT_NT_EURPLN_T_LAST_2018", months, ".csv"),
+      paste0("Data/DAT_NT_EURPLN_T_LAST_2019", months, ".csv")
     ),
     "EURUSD" = c(
-      "Data/DAT_NT_EURUSD_T_LAST_201801.csv",
-      "Data/DAT_NT_EURUSD_T_LAST_201802.csv",
-      "Data/DAT_NT_EURUSD_T_LAST_201803.csv",
-      "Data/DAT_NT_EURUSD_T_LAST_201804.csv",
-      "Data/DAT_NT_EURUSD_T_LAST_201805.csv",
-      "Data/DAT_NT_EURUSD_T_LAST_201806.csv"
+      paste0("Data/DAT_NT_EURUSD_T_LAST_2018", months, ".csv"),
+      paste0("Data/DAT_NT_EURUSD_T_LAST_2019", months, ".csv")
     ),
     "GBPJPY" = c(
-      "Data/DAT_NT_GBPJPY_T_LAST_201801.csv",
-      "Data/DAT_NT_GBPJPY_T_LAST_201802.csv",
-      "Data/DAT_NT_GBPJPY_T_LAST_201803.csv",
-      "Data/DAT_NT_GBPJPY_T_LAST_201804.csv",
-      "Data/DAT_NT_GBPJPY_T_LAST_201805.csv",
-      "Data/DAT_NT_GBPJPY_T_LAST_201806.csv"
+      paste0("Data/DAT_NT_GBPJPY_T_LAST_2018", months, ".csv"),
+      paste0("Data/DAT_NT_GBPJPY_T_LAST_2019", months, ".csv")
     ),
     "GBPUSD" = c(
-      "Data/DAT_NT_GBPUSD_T_LAST_201801.csv",
-      "Data/DAT_NT_GBPUSD_T_LAST_201802.csv",
-      "Data/DAT_NT_GBPUSD_T_LAST_201803.csv",
-      "Data/DAT_NT_GBPUSD_T_LAST_201804.csv",
-      "Data/DAT_NT_GBPUSD_T_LAST_201805.csv",
-      "Data/DAT_NT_GBPUSD_T_LAST_201806.csv"
+      paste0("Data/DAT_NT_GBPUSD_T_LAST_2018", months, ".csv"),
+      paste0("Data/DAT_NT_GBPUSD_T_LAST_2019", months, ".csv")
     ),
     "NZDCAD" = c(
-      "Data/DAT_NT_NZDCAD_T_LAST_201801.csv",
-      "Data/DAT_NT_NZDCAD_T_LAST_201802.csv",
-      "Data/DAT_NT_NZDCAD_T_LAST_201803.csv",
-      "Data/DAT_NT_NZDCAD_T_LAST_201804.csv",
-      "Data/DAT_NT_NZDCAD_T_LAST_201805.csv",
-      "Data/DAT_NT_NZDCAD_T_LAST_201806.csv"
+      paste0("Data/DAT_NT_NZDCAD_T_LAST_2018", months, ".csv"),
+      paste0("Data/DAT_NT_NZDCAD_T_LAST_2019", months, ".csv")
     ),
     "SGDJPY" = c(
-      "Data/DAT_NT_SGDJPY_T_LAST_201801.csv",
-      "Data/DAT_NT_SGDJPY_T_LAST_201802.csv",
-      "Data/DAT_NT_SGDJPY_T_LAST_201803.csv",
-      "Data/DAT_NT_SGDJPY_T_LAST_201804.csv",
-      "Data/DAT_NT_SGDJPY_T_LAST_201805.csv",
-      "Data/DAT_NT_SGDJPY_T_LAST_201806.csv"
+      paste0("Data/DAT_NT_SGDJPY_T_LAST_2018", months, ".csv"),
+      paste0("Data/DAT_NT_SGDJPY_T_LAST_2019", months, ".csv")
     ),
     "USDCHF" = c(
-      "Data/DAT_NT_USDCHF_T_LAST_201801.csv",
-      "Data/DAT_NT_USDCHF_T_LAST_201802.csv",
-      "Data/DAT_NT_USDCHF_T_LAST_201803.csv",
-      "Data/DAT_NT_USDCHF_T_LAST_201804.csv",
-      "Data/DAT_NT_USDCHF_T_LAST_201805.csv",
-      "Data/DAT_NT_USDCHF_T_LAST_201806.csv"
+      paste0("Data/DAT_NT_USDCHF_T_LAST_2018", months, ".csv"),
+      paste0("Data/DAT_NT_USDCHF_T_LAST_2019", months, ".csv")
     ),
     "ZARJPY" = c(
-      "Data/DAT_NT_ZARJPY_T_LAST_201801.csv",
-      "Data/DAT_NT_ZARJPY_T_LAST_201802.csv",
-      "Data/DAT_NT_ZARJPY_T_LAST_201803.csv",
-      "Data/DAT_NT_ZARJPY_T_LAST_201804.csv",
-      "Data/DAT_NT_ZARJPY_T_LAST_201805.csv",
-      "Data/DAT_NT_ZARJPY_T_LAST_201806.csv"
+      paste0("Data/DAT_NT_ZARJPY_T_LAST_2018", months, ".csv"),
+      paste0("Data/DAT_NT_ZARJPY_T_LAST_2019", months, ".csv")
     )
   )
   
@@ -93,10 +55,10 @@ get_data_df = function(){
         dplyr::mutate(
           V1 = as.POSIXct(V1, format= "%Y%m%d %H%M%S") + lubridate::hours(7)
         ) %>% 
-          dplyr::select(DT = V1, Price = V2) %>% 
-          # dplyr::filter(as.Date(DT)==as.Date("2018-01-01")) %>% 
-          as_tibble()
-        # data.table()
+        dplyr::select(DT = V1, Price = V2) %>% 
+        # dplyr::filter(as.Date(DT)==as.Date("2018-01-01")) %>% 
+        as_tibble()
+      # data.table()
     },
     .progress = TRUE
   )
