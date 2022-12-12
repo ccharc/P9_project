@@ -46,8 +46,15 @@ create_ublb = function(n_assets, df_prices, kn){
     C_weight[2] * create_Vn(g2, n_assets, df_prices, kn) +
     C_weight[3] * create_Vn(g3, n_assets, df_prices, kn)
   
-  # Only the diagonals are needed when creating conf. intervals
-  1.96 * nrow(df_prices)^(-1/4) * sqrt(abs(diag(avar)))
+  # Only the diagonals are needed when creating conf. interval
+  return(list(
+    "99" = 2.576 * nrow(df_prices)^(-1/4) * sqrt(abs(diag(avar))),
+    "95" = 1.96 * nrow(df_prices)^(-1/4) * sqrt(abs(diag(avar))),
+    "90" = 1.645 * nrow(df_prices)^(-1/4) * sqrt(abs(diag(avar))),
+    "80" = 1.28 * nrow(df_prices)^(-1/4) * sqrt(abs(diag(avar))),
+    "70" = 1.036 * nrow(df_prices)^(-1/4) * sqrt(abs(diag(avar)))
+  ))
+  
 }
 
 

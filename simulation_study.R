@@ -39,7 +39,7 @@ file_names_MRC = list.files(path = "results", pattern = "MRC")
 file_names_HY = list.files(path = "results", pattern = "HY")
 
 
-theta1 = c(rep(0.5, 9), rep(1, 9), rep(1.5, 9))
+theta1 = c(rep(0.5, 9), rep(0.9, 9), rep(1.3, 9))
 gamma1 = rep(c(0, 0, 0, 0.001, 0.001, 0.001, 0.01, 0.01, 0.01), 3)
 lambda1 = rep(c("(2,4,6,8,10)","(5,15,30,60,120)","(5,5,5,5,120)"), 9)
 
@@ -83,6 +83,8 @@ MRC_results = purrr::pmap(
  .l = list(setNames(file_names_MRC, file_names_MRC), theta1, gamma1, lambda1),
  .f = get_results_MRC
 )
+MRC_results$MRC_theta_13_gamma_001_lambda_5153060120$`Coverage prob`
+
 
 get_results_HY =  function(file_name){
   results = readRDS(paste0("results/", file_name))
