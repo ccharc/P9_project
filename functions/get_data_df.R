@@ -4,48 +4,30 @@ get_data_df = function(){
   
   months = stringr::str_pad(1:12, width = 2, side = "left", pad = "0")
   
-  # selected assets
-  assets = list(
-    "AUDNZD" = c(
-      paste0("Data/DAT_NT_AUDNZD_T_LAST_2018", months, ".csv"),
-      paste0("Data/DAT_NT_AUDNZD_T_LAST_2019", months, ".csv")
-    ),
-    "EURNOK" = c(
-      paste0("Data/DAT_NT_EURNOK_T_LAST_2018", months, ".csv"),
-      paste0("Data/DAT_NT_EURNOK_T_LAST_2019", months, ".csv")
-    ),
-    "EURPLN" = c(
-      paste0("Data/DAT_NT_EURPLN_T_LAST_2018", months, ".csv"),
-      paste0("Data/DAT_NT_EURPLN_T_LAST_2019", months, ".csv")
-    ),
-    "EURUSD" = c(
-      paste0("Data/DAT_NT_EURUSD_T_LAST_2018", months, ".csv"),
-      paste0("Data/DAT_NT_EURUSD_T_LAST_2019", months, ".csv")
-    ),
-    "GBPJPY" = c(
-      paste0("Data/DAT_NT_GBPJPY_T_LAST_2018", months, ".csv"),
-      paste0("Data/DAT_NT_GBPJPY_T_LAST_2019", months, ".csv")
-    ),
-    "GBPUSD" = c(
-      paste0("Data/DAT_NT_GBPUSD_T_LAST_2018", months, ".csv"),
-      paste0("Data/DAT_NT_GBPUSD_T_LAST_2019", months, ".csv")
-    ),
-    "NZDCAD" = c(
-      paste0("Data/DAT_NT_NZDCAD_T_LAST_2018", months, ".csv"),
-      paste0("Data/DAT_NT_NZDCAD_T_LAST_2019", months, ".csv")
-    ),
-    "SGDJPY" = c(
-      paste0("Data/DAT_NT_SGDJPY_T_LAST_2018", months, ".csv"),
-      paste0("Data/DAT_NT_SGDJPY_T_LAST_2019", months, ".csv")
-    ),
-    "USDCHF" = c(
-      paste0("Data/DAT_NT_USDCHF_T_LAST_2018", months, ".csv"),
-      paste0("Data/DAT_NT_USDCHF_T_LAST_2019", months, ".csv")
-    ),
-    "ZARJPY" = c(
-      paste0("Data/DAT_NT_ZARJPY_T_LAST_2018", months, ".csv"),
-      paste0("Data/DAT_NT_ZARJPY_T_LAST_2019", months, ".csv")
+  asset_names = c(
+    "AUDNZD",
+    "EURNOK",
+    "EURPLN",
+    "EURUSD",
+    "GBPJPY",
+    "GBPUSD",
+    "NZDCAD",
+    "SGDJPY",
+    "USDCHF",
+    "ZARJPY"
+  )
+  
+  get_asset_file_names = function(asset, months) {
+    c(
+      paste0("Data/DAT_NT_", asset, "_T_LAST_2018", months, ".csv"),
+      paste0("Data/DAT_NT_", asset, "_T_LAST_2019", months[1:3], ".csv")
     )
+  }
+  
+  assets = purrr::map(
+    .x = setNames(asset_names, asset_names), 
+    .f = get_asset_file_names, 
+    months = months
   )
   
   data = furrr::future_map(
