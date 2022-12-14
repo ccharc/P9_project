@@ -10,18 +10,26 @@ get_data_df = function(){
       paste0("Data/DAT_NT_AUDNZD_T_LAST_2018", months, ".csv"),
       paste0("Data/DAT_NT_AUDNZD_T_LAST_2019", months, ".csv")
     ),
+    "EURCZK" = c(
+      paste0("Data/EUR:CZK/DAT_NT_EURCZK_T_LAST_2018", months, ".csv"),
+      paste0("Data/EUR:CZK/DAT_NT_EURCZK_T_LAST_2019", months, ".csv")
+    ),
     "EURNOK" = c(
       paste0("Data/DAT_NT_EURNOK_T_LAST_2018", months, ".csv"),
       paste0("Data/DAT_NT_EURNOK_T_LAST_2019", months, ".csv")
+    ),
+    "EURHUF" = c(
+      paste0("Data/EUR:HUF/DAT_NT_EURHUF_T_LAST_2018", months, ".csv"),
+      paste0("Data/EUR:HUF/DAT_NT_EURHUF_T_LAST_2019", months, ".csv")
     ),
     "EURPLN" = c(
       paste0("Data/DAT_NT_EURPLN_T_LAST_2018", months, ".csv"),
       paste0("Data/DAT_NT_EURPLN_T_LAST_2019", months, ".csv")
     ),
-    "EURUSD" = c(
-      paste0("Data/DAT_NT_EURUSD_T_LAST_2018", months, ".csv"),
-      paste0("Data/DAT_NT_EURUSD_T_LAST_2019", months, ".csv")
-    ),
+    #"EURUSD" = c(
+     # paste0("Data/DAT_NT_EURUSD_T_LAST_2018", months, ".csv"),
+    #  paste0("Data/DAT_NT_EURUSD_T_LAST_2019", months, ".csv")
+    #),
     "GBPJPY" = c(
       paste0("Data/DAT_NT_GBPJPY_T_LAST_2018", months, ".csv"),
       paste0("Data/DAT_NT_GBPJPY_T_LAST_2019", months, ".csv")
@@ -30,10 +38,10 @@ get_data_df = function(){
       paste0("Data/DAT_NT_GBPUSD_T_LAST_2018", months, ".csv"),
       paste0("Data/DAT_NT_GBPUSD_T_LAST_2019", months, ".csv")
     ),
-    "NZDCAD" = c(
-      paste0("Data/DAT_NT_NZDCAD_T_LAST_2018", months, ".csv"),
-      paste0("Data/DAT_NT_NZDCAD_T_LAST_2019", months, ".csv")
-    ),
+    #"NZDCAD" = c(
+     # paste0("Data/DAT_NT_NZDCAD_T_LAST_2018", months, ".csv"),
+      #paste0("Data/DAT_NT_NZDCAD_T_LAST_2019", months, ".csv")
+    #),
     "SGDJPY" = c(
       paste0("Data/DAT_NT_SGDJPY_T_LAST_2018", months, ".csv"),
       paste0("Data/DAT_NT_SGDJPY_T_LAST_2019", months, ".csv")
