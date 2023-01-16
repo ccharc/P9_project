@@ -5,13 +5,21 @@ simulate_price = function(n, lambda, W)
   BM = c(0,cumsum(BM_increments))
 
   # OU specification for varrho
+  # varrho = c()
+  # varrho0 = rnorm(n = 1, mean = 0, sd = sqrt((-2*alpha)^(-1)))
+  # varrho[1] = varrho0
+  # for (i in 1:n) {
+  #   varrho[i+1] = varrho[i] + alpha * varrho[i] + (BM[i+1] - BM[i])
+  # }
+  
+  # OU specification for varrho solution
   varrho = c()
   varrho0 = rnorm(n = 1, mean = 0, sd = sqrt((-2*alpha)^(-1)))
   varrho[1] = varrho0
   for (i in 1:n) {
-    varrho[i+1] = varrho[i] + alpha * varrho[i] + (BM[i+1] - BM[i])
+    varrho[i+1] = exp(alpha * (i/n)) * (varrho0 + sum(exp(-alpha * ((1:i)/n) ) * (BM[2:(i+1)] - BM[1:i])))
   }
-
+  
   # sigma spot volatility
   sigma = exp(beta0 + beta1 * varrho)
 
@@ -31,7 +39,7 @@ simulate_price = function(n, lambda, W)
 
   # Noisy log prices Y
   omega = sqrt(gamma^2 * sqrt((1/n) * sum(sigma^4)))
-  micro_noise = rnorm(n = length(X), mean = 0, sd = omega^2) # perhaps not squared
+  micro_noise = rnorm(n = length(X), mean = 0, sd = omega^2)
   Y = X + micro_noise
 
   # Irregular and non-synchronous data using a poisson process

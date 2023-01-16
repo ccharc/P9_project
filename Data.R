@@ -5,7 +5,7 @@ library(highfrequency)
 library(tictoc)
 source("functions/get_data_df.R")
 
-future::plan(future::multisession(), workers = 40)
+future::plan(future::multisession(), workers = future::availableCores() - 2)
 data = get_data_df()
 
 log_data = purrr::map(.x = data, .f = function(x) {
@@ -15,7 +15,7 @@ log_data = purrr::map(.x = data, .f = function(x) {
 
 asset_names = names(data)
 n_assets = length(asset_names)
-theta = 0.8
+theta = 0.9
 R.utils::sourceDirectory("functions", modifiedOnly = FALSE)
 
 get_MRC_by_date = function(date, data, n_assets) {

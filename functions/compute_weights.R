@@ -1,6 +1,7 @@
 
-find_weights = function(n_assets, ccov, cmean, target_return){ # ccov and cmean are of class "matrix"
-  browser()
+find_weights = function(n_assets, ccov, cmean, target_return){ 
+  # ccov and cmean are of class "matrix"
+  
   zeros = matrix(rep(0,n_assets))
   ones = matrix(rep(1,n_assets))
   
@@ -15,5 +16,10 @@ find_weights = function(n_assets, ccov, cmean, target_return){ # ccov and cmean 
   
 }
   
-w = find_weights(n_assets = 5,ccov = results$MRC[[1]],cmean = matrix(c(0.004,0.001,-0.005,0,-0.04)), target_return = 0.05)
+w = find_weights(
+  n_assets = 5,
+  ccov = results$MRC[[1]],
+  cmean = matrix(c(0.004,0.001,-0.005,0,-0.04)), 
+  target_return = 0.05
+)
 

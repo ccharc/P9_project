@@ -5,7 +5,7 @@ get_H_t_all = function(MRC_list, return_matrix){
   
   tic()
   
-  theta_H = get_theta_H(MRC_list = MRC_series, return_matrix = t(daily_returns))
+  theta_H = get_theta_H(MRC_list = MRC_list, return_matrix = return_matrix)
   
   v_vec = purrr::map_dfc(.x = MRC_list, .f = diag) %>% 
     as.matrix() # each column is diagonal elements of an MRC
@@ -17,21 +17,24 @@ get_H_t_all = function(MRC_list, return_matrix){
     v_vec = v_vec)
   
   P_bar = get_P_bar(real_cov_list = MRC_list, v_vec = v_vec)
-  # R_bar = get_R_bar(real_cov_list = MRC_list, v_vec = v_vec)
-  R_bar = P_bar
+  
+  u_t = t(return_matrix) * diag(cov(t(return_matrix)))
+  R_bar = cor(u_t)
   
   h = h_t(theta = theta_H[1:(3*nrow(return_matrix))], v_vec = v_vec, return_matrix = return_matrix)
   R = R_t(theta = theta_H[(3*nrow(return_matrix)+1):(3*nrow(return_matrix)+2)], real_corr_mat_list = RL_t, R_bar, P_bar)
   
-  H = map(
-    .x = 1:length(MRC_list),
-    .f = get_H_t, 
-    cond_var_vec = h, 
-    cond_corr_mat = R)
+  # H = map(
+  #   .x = 1:length(MRC_list),
+  #   .f = get_H_t, 
+  #   cond_var_vec = h, 
+  #   cond_corr_mat = R)
+  
+  H_end = get_H_t(t = length(MRC_list), cond_var_vec = h, cond_corr_mat = R)
   
   toc()
   
-  return(H)
+  return(H_end)
   
 }
 
@@ -63,7 +66,6 @@ get_theta_H = function(MRC_list, return_matrix){
     UB = c(rep(Inf, 2*length(theta0_H1)/3), rep(1, length(theta0_H1)/3)))$pars # diagonal elements of B are smaller than the unity
   
   P_bar = get_P_bar(real_cov_list = MRC_list, v_vec = v_vec)
-  # R_bar = get_R_bar(real_cov_list = MRC_list, v_vec = v_vec)
   R_bar = P_bar
   
   # Maximizing the log-likelihood with initial value theta0_H2
@@ -137,16 +139,6 @@ get_P_bar = function(real_cov_list, v_vec){
     p = p + diag(v_vec[,i]^(-0.5)) %*% real_cov_list[[i]] %*% diag(v_vec[,i]^(-0.5))
   }
   return(p / length(real_cov_list))
-}
-
-get_R_bar = function(real_cov_list, v_vec){ # THIS IS COMPLETELY WRONG!!! 
-  
-  r  = 0
-  for (i in 1:length(real_cov_list)) {
-    r = r + real_cov_list[[i]] * v_vec[,i] %*% t(v_vec[,i])
-  }
-  # R_bar = R_bar/ncol(u_t)
-  return(get_P_bar(v_vec, real_cov_list))
 }
 
 # R_t (conditional correlation matrix) 
