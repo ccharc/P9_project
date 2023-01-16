@@ -1,5 +1,6 @@
 library(ggplot2)
 library(tidyverse)
+library(latex2exp)
 
 RV = function(n){
   # Simulating brownian motion
@@ -7,7 +8,7 @@ RV = function(n){
   BM = c(0,cumsum(BM_increments))
 
   # Defining grid of time points
-  t = seq(0, 1 , 1 / n)
+  t = seq(0, 1, 1 / n)
 
   # Specifying drift and diffusion
   mu = 1
@@ -23,13 +24,13 @@ RV = function(n){
   return(RV)
 }
 
-n_s = c(100, 1000, 10000, 100000, 500000, 1000000, 2000000, 5000000, 10000000, 20000000, 50000000, 70000000, 100000000)
+#n_s = c(10000, 100000, 500000, 1000000, 2000000, 5000000)
 
-
+n_s = seq(1000, 10000000, 1000)
 
 tictoc::tic()
 future::plan(future::multisession(), workers = future::availableCores() - 2)
-RV_list = furrr::future_map(.x = n_s, 
+RV_list = furrr::future_map_dbl(.x = n_s, 
                             .f = RV, 
                             .progress = TRUE, 
                             .options = furrr::furrr_options(seed = TRUE))
@@ -37,8 +38,14 @@ tictoc::toc()
 
 delta_n = 1/n_s
 
-data = tibble(´delta_n, unlist(RV_list))
+data = tibble(`Delta`= delta_n, `RV` = RV_list)
 
-ggplot(data = , aes(x = delta_n, y = unlist(RV_list))) + geom_line()
+p = ggplot(data = data , aes(x = Delta, y = log(RV))) +
+  geom_line() +
+  xlab(TeX("$\\Delta_n$")) +
+  ylab(TeX("$log(RV)$")) +
+  theme_bw() + 
+  ggtitle(TeX("The log of the realized covariation as a function of $\\Delta_n$"))
+
 
 
