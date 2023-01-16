@@ -9,32 +9,17 @@ seeds = 1:1000
 
 theta = 1
 gamma = sqrt(0)
-
-
-#MRC_results = MRC_sim_study(seeds, lambda)
-
-seeds = 1:1000
 lambda = lambda3
 
-for (j in c(0.5, 1, 1.5)) {
-  theta = j
-  for (i in c(sqrt(0.001), sqrt(0.01), sqrt(0))) {
-    future::plan(future::multisession(), workers = future::availableCores() - 2)
-    gamma = i
-    MRC_results = MRC_sim_study(seeds, lambda)
-  }
-}
+# Run the simulation study with the above specifications
+MRC_results = MRC_sim_study(seeds, lambda)
+HY_results = HY_sim_study(seeds, lambda)
 
-
-#HY_results = HY_sim_study(seeds, lambda)
 
 
 
 # -------------------------------------------------------------------------
 
-
-
-# -------------------------------------------------------------------------
 file_names_MRC = list.files(path = "results", pattern = "MRC")
 file_names_HY = list.files(path = "results", pattern = "HY")
 
@@ -58,14 +43,46 @@ get_results_MRC =  function(file_name, theta1, gamma1, lambda1){
   data1 = data %>% tidyr::pivot_longer(cols = everything(), values_to = "x", names_to = "groups")
   
   plot = ggplot(data = data1, aes(x = x)) +
-  labs(color = "", x = "Error", y = "Density", title = "Density plot", subtitle = 
-           paste0("With theta = ", theta1, ", gamma\U00B2 = ", gamma1, ", lambda = ", lambda1 ))  +
-    theme(legend.position = c(0.09, 0.92), legend.background = element_blank()) +
-    geom_line(stat = "density", alpha = 0.4, aes(color = groups), show.legend = FALSE) +
-    stat_function(fun = dnorm, aes(color = "N(0,1)"), col = "black", geom = "line", size = .5) +
-    xlim(c(-10,5)) + theme_bw()
+    labs(
+      color = "",
+      x = "Error",
+      y = "Density",
+      title = "Density plot",
+      subtitle =
+        paste0(
+          "With theta = ",
+          theta1,
+          ", gamma\U00B2 = ",
+          gamma1,
+          ", lambda = ",
+          lambda1
+        )
+    )  +
+    theme(legend.position = c(0.09, 0.92),
+          legend.background = element_blank()) +
+    geom_line(
+      stat = "density",
+      alpha = 0.4,
+      aes(color = groups),
+      show.legend = FALSE
+    ) +
+    stat_function(
+      fun = dnorm,
+      aes(color = "N(0,1)"),
+      col = "black",
+      geom = "line",
+      size = .5
+    ) +
+    xlim(c(-10, 5)) + theme_bw()
   
-  ggsave(plot = plot, filename = paste0("plot_", file_name,".pdf"), width = 14, height = 10, units = "cm", path = "~/Mit drev/AAU/Projekter/P9-projekt/P9_project/Plots")
+  ggsave(
+    plot = plot,
+    filename = paste0("plot_", file_name, ".pdf"),
+    width = 14,
+    height = 10,
+    units = "cm",
+    path = "Plots"
+  )
   
   return(list(
     "bias" = bias,
@@ -83,14 +100,16 @@ MRC_results = purrr::pmap(
  .l = list(setNames(file_names_MRC, file_names_MRC), theta1, gamma1, lambda1),
  .f = get_results_MRC
 )
-MRC_results$MRC_theta_13_gamma_001_lambda_5153060120$`Coverage prob`
+
+# Here the results can be viewed by changing the file name and which result to be displayed
+MRC_results$MRC_theta_13_gamma_0_lambda_5153060120$RMSE
 
 
 get_results_HY =  function(file_name){
   results = readRDS(paste0("results/", file_name))
-  bias = results$bias %>% mean()
-  RMSE = results$RMSE %>% mean()
-  MAE = results$MAE %>% mean()
+  bias = results$bias %>% mean(na.rm = TRUE)
+  RMSE = results$RMSE %>% mean(na.rm = TRUE)
+  MAE = results$MAE %>% mean(na.rm = TRUE)
   
   return(list(
     "bias" = bias,
@@ -105,8 +124,8 @@ HY_results = purrr::map(
 )
 
 bias = purrr::map_dbl(HY_results, "bias") %>% round(digits = 5)
-RMSE = purrr::map_dbl(HY_results, "RMSE") %>% round(digits = 3)
-MAE = purrr::map_dbl(HY_results, "MAE") %>% round(digits = 3)
+RMSE = purrr::map_dbl(HY_results, "RMSE") %>% round(digits = 4)
+MAE = purrr::map_dbl(HY_results, "MAE") %>% round(digits = 4)
 
 
 
